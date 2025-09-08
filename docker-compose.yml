@@ -24,13 +24,14 @@ services:
       - CAMERA_ID=0
       - MQTT_HOST=mqtt-broker
       - MQTT_PORT=1883
-      - MQTT_TOPIC=plant/area
+      - MQTT_TOPIC=
       - PUBLISH_INTERVAL_MS=1000
       - THRESHOLD=100
       - INPUT_MODE=IMAGE
       - INPUT_PATH=/samples/plant.jpg
     volumes:
       - ./samples:/samples:ro
+      - ./data:/app/data
 
   web-ui:
     image: plantvision/web:latest
@@ -44,7 +45,7 @@ services:
       - MQTT_HOST=mqtt-broker
       - MQTT_PORT=1883
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - ./data:/app/data
 

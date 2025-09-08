@@ -1,0 +1,19 @@
+{
+  "mqtt": {
+    "host": "mqtt-broker",
+    "port": 1883
+  },
+  "uns": {
+    "room": "room-1",
+    "area": "area-1",
+    "camera_id": "0",
+    "plant_id": "plant-1"
+  },
+  "processing": {
+    "threshold": 100,
+    "publish_interval_ms": 1000,
+    "scale_px_per_cm": 0.0,
+    "input_mode": "IMAGE",
+    "input_path": "/samples/plant.jpg"
+  }
+}
