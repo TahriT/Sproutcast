@@ -49,5 +49,23 @@ services:
     volumes:
       - ./data:/app/data
 
+  ai:
+    image: plantvision/ai:latest
+    build:
+      context: ./ai
+      dockerfile: Dockerfile
+    container_name: pv-ai
+    depends_on:
+      - mqtt-broker
+    environment:
+      - MQTT_HOST=mqtt-broker
+      - MQTT_PORT=1883
+      - UNS_ROOM=room-1
+      - UNS_AREA=area-1
+      - CAMERA_ID=0
+      - PLANT_ID=plant-1
+    volumes:
+      - ./data:/app/data
+
 volumes: {}
 

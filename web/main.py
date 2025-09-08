@@ -14,6 +14,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/frames", StaticFiles(directory="/app/data"), name="frames")
 
 CONFIG_PATH = "/app/data/config.json"
+AI_METRICS_PATH = "/app/data/ai_metrics.json"
 
 default_config: Dict[str, Any] = {
     "mqtt": {
@@ -74,44 +75,70 @@ threading.Thread(target=mqtt_thread, daemon=True).start()
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    latest = state["latest"] or "{}"
-    html = f"""
+    html = """
     <html>
         <head>
             <title>PlantVision Dashboard</title>
-            <meta http-equiv=\"refresh\" content=\"2\">
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 1.5rem; }}
-                header {{ display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; }}
-                a {{ text-decoration: none; color: #0366d6; }}
-                .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }}
-                .card {{ border: 1px solid #eee; padding: 1rem; border-radius: 8px; }}
-                img {{ max-width: 100%; border-radius: 6px; border: 1px solid #ddd; }}
-                pre {{ background: #f8f8f8; padding: 1rem; border-radius: 6px; }}
+                :root { --bg:#0b1220; --fg:#e8eefb; --card:#111a2e; --accent:#4f8cff; }
+                body { font-family: Arial, sans-serif; margin: 0; background: var(--bg); color: var(--fg); }
+                header.nav { display:flex; align-items:center; gap:1rem; padding:.75rem 1rem; border-bottom:1px solid #223; position:sticky; top:0; background:rgba(11,18,32,.95); backdrop-filter: blur(6px); }
+                header.nav h2 { margin:0; font-size:1.1rem; }
+                header.nav a { color: var(--fg); text-decoration:none; opacity:.9; }
+                header.nav .spacer { flex:1; }
+                header.nav .icons a { padding:.25rem .5rem; border-radius:6px; }
+                main { padding: 1rem; }
+                .grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+                .card { background: var(--card); border:1px solid #223; border-radius:10px; padding:1rem; }
+                img { max-width: 100%; border-radius: 8px; border:1px solid #2a385a; display:block; }
+                pre.telemetry { background:#0f172a; border:1px solid #223; padding:1rem; border-radius:8px; max-height:260px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+                .muted { opacity:.8; }
             </style>
         </head>
         <body>
-            <header>
-                <h2 style=\"margin:0;\">PlantVision</h2>
-                <nav>
-                    <a href=\"/\">Dashboard</a> |
-                    <a href=\"/settings\">Settings</a>
+            <header class="nav">
+                <div>🌿</div>
+                <h2>PlantVision</h2>
+                <div class="spacer"></div>
+                <nav class="icons">
+                    <a href="/">🏠 Dashboard</a>
+                    <a href="/settings">⚙️ Settings</a>
                 </nav>
             </header>
-            <div class=\"grid\">
-                <div class=\"card\">
-                    <h3>Raw Frame</h3>
-                    <img src=\"/frames/frame_raw.jpg\" onerror=\"this.style.display='none'\" />
+            <main>
+                <div class="grid">
+                    <div class="card">
+                        <h3 class="muted">Raw Frame</h3>
+                        <img id="img-raw" src="/frames/frame_raw.jpg" />
+                    </div>
+                    <div class="card">
+                        <h3 class="muted">Annotated Frame</h3>
+                        <img id="img-ann" src="/frames/frame_annotated.jpg" />
+                    </div>
                 </div>
-                <div class=\"card\">
-                    <h3>Annotated Frame</h3>
-                    <img src=\"/frames/frame_annotated.jpg\" onerror=\"this.style.display='none'\" />
+                <div class="card" style="margin-top:1rem;">
+                    <h3 class="muted">Latest Telemetry</h3>
+                    <pre class="telemetry" id="telemetry">{}</pre>
                 </div>
-            </div>
-            <div class=\"card\" style=\"margin-top:1rem;\">
-                <h3>Latest Telemetry</h3>
-                <pre>{latest}</pre>
-            </div>
+            </main>
+            <script>
+                async function refreshTelemetry() {
+                    try {
+                        const r = await fetch('/api/latest');
+                        const d = await r.json();
+                        document.getElementById('telemetry').textContent = d.latest || '{}';
+                    } catch (e) { /* ignore */ }
+                }
+                function refreshImages() {
+                    const t = Date.now();
+                    const raw = document.getElementById('img-raw');
+                    const ann = document.getElementById('img-ann');
+                    raw.src = '/frames/frame_raw.jpg?t=' + t;
+                    ann.src = '/frames/frame_annotated.jpg?t=' + t;
+                }
+                setInterval(refreshTelemetry, 1000);
+                setInterval(refreshImages, 1500);
+            </script>
         </body>
     </html>
     """
@@ -230,4 +257,13 @@ async def api_config_set(payload: Dict[str, Any]):
     except Exception:
         pass
     return JSONResponse(content={"ok": True, "config": state["config"]})
+
+
+@app.get("/api/ai")
+def api_ai():
+    try:
+        with open(AI_METRICS_PATH, 'r', encoding='utf-8') as f:
+            return JSONResponse(content=pyjson.load(f))
+    except Exception:
+        return JSONResponse(content={})
 
