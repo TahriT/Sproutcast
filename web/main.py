@@ -87,12 +87,13 @@ def index(request: Request):
                 header.nav a { color: var(--fg); text-decoration:none; opacity:.9; }
                 header.nav .spacer { flex:1; }
                 header.nav .icons a { padding:.25rem .5rem; border-radius:6px; }
-                main { padding: 1rem; }
-                .grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+                main { padding: 1rem; max-width: 1100px; margin: 0 auto; }
+                .row { display:grid; grid-template-columns: 420px 1fr; gap:1rem; align-items:start; margin-bottom: 1rem; }
                 .card { background: var(--card); border:1px solid #223; border-radius:10px; padding:1rem; }
                 img { max-width: 100%; border-radius: 8px; border:1px solid #2a385a; display:block; }
-                pre.telemetry { background:#0f172a; border:1px solid #223; padding:1rem; border-radius:8px; max-height:260px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+                pre.telemetry { background:#0f172a; border:1px solid #223; padding:1rem; border-radius:8px; max-height:220px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
                 .muted { opacity:.8; }
+                .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
             </style>
         </head>
         <body>
@@ -106,7 +107,7 @@ def index(request: Request):
                 </nav>
             </header>
             <main>
-                <div class="grid">
+                <div class="grid2">
                     <div class="card">
                         <h3 class="muted">Raw Frame</h3>
                         <img id="img-raw" src="/frames/frame_raw.jpg" />
@@ -116,28 +117,45 @@ def index(request: Request):
                         <img id="img-ann" src="/frames/frame_annotated.jpg" />
                     </div>
                 </div>
-                <div class="card" style="margin-top:1rem;">
-                    <h3 class="muted">Latest Telemetry</h3>
-                    <pre class="telemetry" id="telemetry">{}</pre>
-                </div>
+                <div id="plants"></div>
             </main>
             <script>
-                async function refreshTelemetry() {
-                    try {
+                function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt) e.textContent=txt; return e; }
+                async function refreshTelemetry(){
+                    try{
                         const r = await fetch('/api/latest');
                         const d = await r.json();
-                        document.getElementById('telemetry').textContent = d.latest || '{}';
-                    } catch (e) { /* ignore */ }
+                        const txt = (d && d.latest) ? d.latest : '{}';
+                        // Try to parse plants
+                        let plants = [];
+                        try{ const o = JSON.parse(txt); plants = o.plants || []; }catch(e){}
+                        const cont = document.getElementById('plants');
+                        cont.innerHTML = '';
+                        for(let i=0;i<plants.length;i++){
+                            const row = el('div','row');
+                            const imgBox = el('div','card');
+                            const h3 = el('h3','muted','Plant '+i);
+                            const img = new Image();
+                            img.src = '/frames/plant_'+i+'_highlight.jpg?t=' + Date.now();
+                            imgBox.appendChild(h3); imgBox.appendChild(img);
+                            const dataBox = el('div','card');
+                            const pre = el('pre','telemetry'); pre.id = 'plant-pre-'+i; pre.textContent = JSON.stringify(plants[i], null, 2);
+                            dataBox.appendChild(el('h3','muted','Telemetry'));
+                            dataBox.appendChild(pre);
+                            row.appendChild(imgBox); row.appendChild(dataBox);
+                            cont.appendChild(row);
+                        }
+                    }catch(e){}
                 }
-                function refreshImages() {
+                function refreshImages(){
                     const t = Date.now();
-                    const raw = document.getElementById('img-raw');
-                    const ann = document.getElementById('img-ann');
-                    raw.src = '/frames/frame_raw.jpg?t=' + t;
-                    ann.src = '/frames/frame_annotated.jpg?t=' + t;
+                    document.getElementById('img-raw').src = '/frames/frame_raw.jpg?t='+t;
+                    document.getElementById('img-ann').src = '/frames/frame_annotated.jpg?t='+t;
                 }
-                setInterval(refreshTelemetry, 1000);
-                setInterval(refreshImages, 1500);
+                setInterval(refreshTelemetry, 1200);
+                setInterval(refreshImages, 2000);
+                refreshTelemetry();
+                refreshImages();
             </script>
         </body>
     </html>

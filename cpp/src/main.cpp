@@ -146,6 +146,46 @@ int main() {
             {"plants", plants}
         };
 
+        // Save per-plant crops and highlights, and publish per-plant topics
+        for (size_t i = 0; i < res.perContourAreaPx.size(); ++i) {
+            const auto &bb = res.perContourBBox[i];
+            cv::Rect roi = bb & cv::Rect(0, 0, frame.cols, frame.rows);
+            if (roi.width > 0 && roi.height > 0) {
+                try {
+                    cv::imwrite("/app/data/plant_" + std::to_string(i) + "_crop.jpg", frame(roi));
+                } catch (...) {}
+            }
+            cv::Mat single = frame.clone();
+            // Dim others
+            cv::Mat overlay = single.clone();
+            cv::Mat dark(single.size(), single.type(), cv::Scalar(0,0,0));
+            double alpha = 0.6;
+            cv::addWeighted(overlay, alpha, dark, 1.0 - alpha, 0.0, overlay);
+            // Copy ROI from original to overlay to highlight the plant area
+            if (roi.width > 0 && roi.height > 0) {
+                frame(roi).copyTo(overlay(roi));
+            }
+            try {
+                cv::imwrite("/app/data/plant_" + std::to_string(i) + "_highlight.jpg", overlay);
+            } catch (...) {}
+
+            json p = plants.at(i);
+            p["timestamp"] = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   std::chrono::system_clock::now().time_since_epoch()).count();
+            // Write per-plant JSON
+            try {
+                std::ofstream pf("/app/data/plant_" + std::to_string(i) + ".json");
+                pf << p.dump();
+            } catch (...) {}
+
+            // Per-plant MQTT topic
+            std::string plantTopic = topic;
+            if (!plantTopic.empty()) {
+                plantTopic += "/plants/" + std::to_string(i) + "/telemetry";
+                client.publish(plantTopic, p.dump());
+            }
+        }
+
         client.publish(topic, payload.dump());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
