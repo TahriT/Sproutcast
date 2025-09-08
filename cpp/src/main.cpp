@@ -32,6 +32,14 @@ static nlohmann::json load_config_json(const std::string &path) {
     return nlohmann::json();
 }
 
+static nlohmann::json load_json_if_exists(const std::string &path) {
+    try {
+        std::ifstream f(path);
+        if (f) { nlohmann::json j; f >> j; return j; }
+    } catch (...) {}
+    return nlohmann::json();
+}
+
 template <typename T>
 static T json_get_or(const nlohmann::json &j, const char *key, const T &def) {
     try {
@@ -67,17 +75,42 @@ int main() {
     double scalePxPerCm = std::atof(getenv_str("SCALE_PX_PER_CM", std::to_string(json_get_nested_or<double>(cfg, "processing", "scale_px_per_cm", 0.0)).c_str()).c_str());
     std::string inputMode = getenv_str("INPUT_MODE", json_get_nested_or<std::string>(cfg, "processing", "input_mode", std::string("IMAGE")).c_str()); // IMAGE or CAMERA
     std::string inputPath = getenv_str("INPUT_PATH", json_get_nested_or<std::string>(cfg, "processing", "input_path", std::string("/samples/plant.jpg")).c_str());
+    std::string inputUrl = getenv_str("INPUT_URL", json_get_nested_or<std::string>(cfg, "processing", "input_url", std::string("")).c_str());
+
+    // If cameras[] exists, override from active_camera_index
+    int activeIdx = json_get_or<int>(cfg, "active_camera_index", 0);
+    if (cfg.contains("cameras") && cfg["cameras"].is_array()) {
+        const auto &cams = cfg["cameras"];
+        if (activeIdx >= 0 && activeIdx < static_cast<int>(cams.size())) {
+            const auto &cam = cams[activeIdx];
+            cameraId = json_get_or<int>(cam, "camera_id", cameraId);
+            inputMode = json_get_or<std::string>(cam, "input_mode", inputMode);
+            inputPath = json_get_or<std::string>(cam, "input_path", inputPath);
+            inputUrl = json_get_or<std::string>(cam, "input_url", inputUrl);
+        }
+    }
 
     std::string topicEnv = getenv_str("MQTT_TOPIC", "");
     std::string topic;
     if (!topicEnv.empty()) {
         topic = topicEnv;
     } else {
+        // UNS fields may come from cameras[active]
         std::string room = json_get_nested_or<std::string>(cfg, "uns", "room", std::string("room-1"));
         std::string area = json_get_nested_or<std::string>(cfg, "uns", "area", std::string("area-1"));
-        std::string cam = json_get_nested_or<std::string>(cfg, "uns", "camera_id", std::string("0"));
+        std::string camIdStr = json_get_nested_or<std::string>(cfg, "uns", "camera_id", std::string("0"));
         std::string plant = json_get_nested_or<std::string>(cfg, "uns", "plant_id", std::string("plant-1"));
-        topic = std::string("plantvision/") + room + "/" + area + "/" + cam + "/" + plant + "/telemetry";
+        if (cfg.contains("cameras") && cfg["cameras"].is_array()) {
+            const auto &cams = cfg["cameras"];
+            if (activeIdx >= 0 && activeIdx < static_cast<int>(cams.size())) {
+                const auto &cam = cams[activeIdx];
+                room = json_get_or<std::string>(cam, "room", room);
+                area = json_get_or<std::string>(cam, "area", area);
+                camIdStr = json_get_or<std::string>(cam, "camera_id", camIdStr);
+                plant = json_get_or<std::string>(cam, "plant_id", plant);
+            }
+        }
+        topic = std::string("plantvision/") + room + "/" + area + "/" + camIdStr + "/" + plant + "/telemetry";
     }
 
     cv::VideoCapture cap;
@@ -85,6 +118,15 @@ int main() {
         cap.open(cameraId);
         if (!cap.isOpened()) {
             std::cerr << "Failed to open camera " << cameraId << ". Falling back to black frame.\n";
+        }
+    } else if (inputMode == "NETWORK") {
+        if (!inputUrl.empty()) {
+            cap.open(inputUrl);
+            if (!cap.isOpened()) {
+                std::cerr << "Failed to open network stream at URL: " << inputUrl << "\n";
+            }
+        } else {
+            std::cerr << "INPUT_MODE=NETWORK but INPUT_URL is empty.\n";
         }
     }
 
@@ -95,7 +137,7 @@ int main() {
 
     while (true) {
         cv::Mat frame;
-        if (inputMode == "CAMERA" && cap.isOpened()) {
+        if ((inputMode == "CAMERA" || inputMode == "NETWORK") && cap.isOpened()) {
             cap >> frame;
         }
         if (frame.empty()) {
@@ -122,17 +164,34 @@ int main() {
             cv::imwrite("/app/data/frame_annotated.jpg", annotated);
         } catch (...) {}
 
+        // Load manual class overrides
+        auto overrides = load_json_if_exists("/app/data/classes_overrides.json");
+
         // Build payload with per-plant data
         json plants = json::array();
         for (size_t i = 0; i < res.perContourAreaPx.size(); ++i) {
             const auto &bb = res.perContourBBox[i];
             double area_px = res.perContourAreaPx[i];
             double area_cm2 = (scalePxPerCm > 0.0) ? (area_px / (scalePxPerCm * scalePxPerCm)) : 0.0;
+            // Compute mean BGR in ROI as a simple color feature
+            cv::Rect roi = bb & cv::Rect(0, 0, frame.cols, frame.rows);
+            cv::Scalar meanBgr(0,0,0);
+            if (roi.width > 0 && roi.height > 0) {
+                meanBgr = cv::mean(frame(roi));
+            }
+            std::string label = "unknown";
+            try {
+                if (overrides.contains(std::to_string(i)) && overrides[std::to_string(i)].contains("label")) {
+                    label = overrides[std::to_string(i)]["label"].get<std::string>();
+                }
+            } catch (...) {}
             plants.push_back({
                 {"id", static_cast<int>(i)},
                 {"bbox", {bb.x, bb.y, bb.width, bb.height}},
                 {"area_pixels", area_px},
-                {"area_cm2", area_cm2}
+                {"area_cm2", area_cm2},
+                {"label", label},
+                {"mean_bgr", {meanBgr[0], meanBgr[1], meanBgr[2]}}
             });
         }
 

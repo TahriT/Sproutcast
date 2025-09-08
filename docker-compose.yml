@@ -66,6 +66,7 @@ services:
       - PLANT_ID=plant-1
     volumes:
       - ./data:/app/data
+      - ./models:/app/models:ro
 
 volumes: {}
 

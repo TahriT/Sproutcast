@@ -5,12 +5,78 @@ import orjson
 import numpy as np
 import paho.mqtt.client as mqtt
 import cv2
+import pathlib
+try:
+    import onnxruntime as ort
+except Exception:
+    ort = None
+import requests
 
 DATA_DIR = "/app/data"
 RAW_PATH = os.path.join(DATA_DIR, "frame_raw.jpg")
 METRICS_PATH = os.path.join(DATA_DIR, "ai_metrics.json")
+OVERRIDE_PATH = os.path.join(DATA_DIR, "classes_overrides.json")
+MODELS_DIR = "/app/models"
+MIDAS_ONNX = os.path.join(MODELS_DIR, "midas_small.onnx")
+MIDAS_URL = "https://github.com/isl-org/MiDaS/releases/download/v3_1_small/model-small.onnx"
 
-def compute_metrics(img_bgr: np.ndarray) -> dict:
+def ensure_dir(p):
+    try:
+        os.makedirs(p, exist_ok=True)
+    except Exception:
+        pass
+
+def download_file(url: str, dest: str):
+    try:
+        r = requests.get(url, timeout=60)
+        r.raise_for_status()
+        with open(dest, 'wb') as f:
+            f.write(r.content)
+        return True
+    except Exception:
+        return False
+
+def load_overrides() -> dict:
+    try:
+        with open(OVERRIDE_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def load_midas():
+    ensure_dir(MODELS_DIR)
+    if ort and not os.path.exists(MIDAS_ONNX):
+        download_file(MIDAS_URL, MIDAS_ONNX)
+    if ort and os.path.exists(MIDAS_ONNX):
+        try:
+            sess = ort.InferenceSession(MIDAS_ONNX, providers=["CPUExecutionProvider"])
+            return ("onnx", sess)
+        except Exception:
+            return (None, None)
+    return (None, None)
+
+def run_midas(model, img_bgr: np.ndarray) -> np.ndarray:
+    kind, obj = model
+    if kind == "onnx":
+        # Simple letterbox to 256x256 for small models; adjust if needed
+        h, w = img_bgr.shape[:2]
+        inp = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        inp = cv2.resize(inp, (256, 256), interpolation=cv2.INTER_AREA)
+        inp = inp.astype(np.float32) / 255.0
+        inp = inp.transpose(2,0,1)[None, ...]
+        out = obj.run(None, {obj.get_inputs()[0].name: inp})[0][0,0]
+        out = cv2.resize(out, (w, h), interpolation=cv2.INTER_CUBIC)
+        # Normalize to 0..1
+        mn, mx = float(out.min()), float(out.max())
+        if mx > mn:
+            out = (out - mn) / (mx - mn)
+        else:
+            out = np.zeros_like(out, dtype=np.float32)
+        return out.astype(np.float32)
+    return None
+
+
+def compute_metrics(img_bgr: np.ndarray, overrides: dict, depth_model=None) -> dict:
     if img_bgr is None or img_bgr.size == 0:
         return {}
     hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
@@ -33,7 +99,9 @@ def compute_metrics(img_bgr: np.ndarray) -> dict:
     # Contours for shape metrics
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     per_plant = []
+    idx = -1
     for c in contours:
+        idx += 1
         area = float(cv2.contourArea(c))
         if area < 50:
             continue
@@ -42,22 +110,41 @@ def compute_metrics(img_bgr: np.ndarray) -> dict:
         aspect = float(w) / float(h) if h > 0 else 0.0
         roundness = float(4.0 * np.pi * area / (perim * perim)) if perim > 0 else 0.0
         hu = cv2.HuMoments(cv2.moments(c)).flatten().tolist()
-        per_plant.append({
+        label = overrides.get(str(idx), {}).get("label", "unknown")
+        entry = {
             "area_px": area,
             "perimeter_px": perim,
             "aspect": aspect,
             "roundness": roundness,
             "bbox": [int(x), int(y), int(w), int(h)],
-            "hu": [float(v) for v in hu]
-        })
+            "hu": [float(v) for v in hu],
+            "label": label,
+            "confidence": 0.0
+        }
+        per_plant.append(entry)
 
-    return {
+    out = {
         "mean_hsv": mean_hsv,
         "mean_lab": mean_lab,
         "green_ratio": green_ratio,
         "plants": per_plant,
         "timestamp": int(time.time() * 1000)
     }
+    # Optional depth estimation
+    if depth_model is not None:
+        try:
+            depth = run_midas(depth_model, img_bgr)
+            if depth is not None:
+                out["depth_summary"] = {"min": float(depth.min()), "max": float(depth.max()), "mean": float(depth.mean())}
+                for p in out["plants"]:
+                    x,y,w,h = p["bbox"]
+                    roi = depth[max(y,0):y+h, max(x,0):x+w]
+                    if roi.size > 0:
+                        p["median_depth"] = float(np.median(roi))
+                        p["height_norm"] = float(h / max(img_bgr.shape[0],1))
+        except Exception:
+            pass
+    return out
 
 
 def main():
@@ -74,6 +161,7 @@ def main():
 
     baseline = None
     last_mtime = 0
+    depth_model = load_midas()
 
     while True:
         try:
@@ -87,7 +175,8 @@ def main():
             last_mtime = mtime
 
             img = cv2.imread(RAW_PATH)
-            metrics = compute_metrics(img)
+            overrides = load_overrides()
+            metrics = compute_metrics(img, overrides, depth_model)
             if not metrics:
                 time.sleep(0.5)
                 continue

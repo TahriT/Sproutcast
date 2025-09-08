@@ -15,6 +15,7 @@ app.mount("/frames", StaticFiles(directory="/app/data"), name="frames")
 
 CONFIG_PATH = "/app/data/config.json"
 AI_METRICS_PATH = "/app/data/ai_metrics.json"
+OVERRIDE_PATH = "/app/data/classes_overrides.json"
 
 default_config: Dict[str, Any] = {
     "mqtt": {
@@ -87,13 +88,143 @@ def index(request: Request):
                 header.nav a { color: var(--fg); text-decoration:none; opacity:.9; }
                 header.nav .spacer { flex:1; }
                 header.nav .icons a { padding:.25rem .5rem; border-radius:6px; }
-                main { padding: 1rem; max-width: 1100px; margin: 0 auto; }
-                .row { display:grid; grid-template-columns: 420px 1fr; gap:1rem; align-items:start; margin-bottom: 1rem; }
+                header.nav select { background:#0f172a; color:var(--fg); border:1px solid #223; border-radius:8px; padding:.35rem .5rem; }
+                main { padding: 1rem; max-width: 1200px; margin: 0 auto; }
+                .row { display:grid; grid-template-columns: 460px 1fr; gap:1rem; align-items:start; margin-bottom: 1rem; }
                 .card { background: var(--card); border:1px solid #223; border-radius:10px; padding:1rem; }
-                img { max-width: 100%; border-radius: 8px; border:1px solid #2a385a; display:block; }
-                pre.telemetry { background:#0f172a; border:1px solid #223; padding:1rem; border-radius:8px; max-height:220px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+                .img-wrap { width:100%; height:320px; display:flex; align-items:center; justify-content:center; }
+                .img-wrap img { max-width:100%; max-height:100%; border-radius:8px; border:1px solid #2a385a; display:block; object-fit: contain; }
+                pre.telemetry { background:#0f172a; border:1px solid #223; padding:1rem; border-radius:8px; max-height:240px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
                 .muted { opacity:.8; }
                 .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+                .two { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+                details { background:#0f172a; border:1px solid #223; border-radius:8px; padding:.5rem .75rem; }
+            </style>
+        </head>
+        <body>
+            <header class="nav">
+                <div>🌿</div>
+                <h2>PlantVision</h2>
+                <div class="spacer"></div>
+                <label class="muted">Camera</label>
+                <select id="cam-select"></select>
+                <nav class="icons">
+                    <a href="/">🏠 Dashboard</a>
+                    <a href="/settings">⚙️ Settings</a>
+                </nav>
+            </header>
+            <main>
+                <div class="grid2">
+                    <div class="card">
+                        <h3 class="muted">Raw Frame</h3>
+                        <div class="img-wrap"><img id="img-raw" src="/frames/frame_raw.jpg" /></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="muted">Annotated Frame</h3>
+                        <div class="img-wrap"><img id="img-ann" src="/frames/frame_annotated.jpg" /></div>
+                    </div>
+                </div>
+                <div class="card" style="margin-top:1rem;">
+                    <h3 class="muted">AI Metrics</h3>
+                    <pre class="telemetry" id="ai-box">{}</pre>
+                </div>
+                <div id="plants"></div>
+            </main>
+            <script>
+                let CAM_INDEX = 0;
+                const plantRows = new Map();
+                function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt) e.textContent=txt; return e; }
+                function ensurePlantRow(i){
+                    if(plantRows.has(i)) return plantRows.get(i);
+                    const row = el('div','row');
+                    const imgBox = el('div','card');
+                    imgBox.appendChild(el('h3','muted','Plant '+i));
+                    const wrap = el('div','img-wrap');
+                    const img = new Image(); img.id = 'plant-img-'+i; img.src = '/frames/plant_'+i+'_highlight.jpg';
+                    wrap.appendChild(img); imgBox.appendChild(wrap);
+                    const dataBox = el('div','card');
+                    dataBox.appendChild(el('h3','muted','Telemetry'));
+                    const detailsEl = document.createElement('details');
+                    const summary = document.createElement('summary'); summary.textContent = 'Topic & Data';
+                    const topic = el('div','muted'); topic.id = 'topic-'+i;
+                    const pre = el('pre','telemetry'); pre.id = 'plant-pre-'+i; pre.textContent = '{}';
+                    detailsEl.appendChild(summary); detailsEl.appendChild(topic); detailsEl.appendChild(pre);
+                    dataBox.appendChild(detailsEl);
+                    row.appendChild(imgBox); row.appendChild(dataBox);
+                    document.getElementById('plants').appendChild(row);
+                    plantRows.set(i, {row, img, pre, topic});
+                    return plantRows.get(i);
+                }
+                async function loadCameras(){
+                    try{
+                        const r = await fetch('/api/config');
+                        const cfg = await r.json();
+                        const cams = cfg.cameras || [{ id: cfg.uns?.camera_id || '0', plant_id: cfg.uns?.plant_id || 'plant-1', room: cfg.uns?.room || 'room-1', area: cfg.uns?.area || 'area-1' }];
+                        const sel = document.getElementById('cam-select');
+                        sel.innerHTML='';
+                        cams.forEach((c,idx)=>{ const opt=document.createElement('option'); opt.value=idx; opt.textContent = c.name || (`Camera ${idx}`); sel.appendChild(opt); });
+                        sel.onchange = async ()=>{ CAM_INDEX = parseInt(sel.value||'0'); await fetch('/api/set-active-camera', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ index: CAM_INDEX })}); };
+                    }catch(e){}
+                }
+                async function refreshAI(){
+                    try{ const r = await fetch('/api/ai'); const a = await r.json(); document.getElementById('ai-box').textContent = JSON.stringify(a, null, 2);}catch(e){}
+                }
+                async function refreshTelemetry(){
+                    try{
+                        const cfgRes = await fetch('/api/config'); const cfg = await cfgRes.json();
+                        const cams = cfg.cameras || [{ room: cfg.uns?.room||'room-1', area: cfg.uns?.area||'area-1', camera_id: cfg.uns?.camera_id||'0', plant_id: cfg.uns?.plant_id||'plant-1' }];
+                        const cam = cams[Math.min(CAM_INDEX, cams.length-1)];
+                        const r = await fetch('/api/latest');
+                        const d = await r.json();
+                        const txt = (d && d.latest) ? d.latest : '{}';
+                        let plants = [];
+                        try{ const o = JSON.parse(txt); plants = o.plants || []; }catch(e){}
+                        for(let i=0;i<plants.length;i++){
+                            const pr = ensurePlantRow(i);
+                            pr.pre.textContent = JSON.stringify(plants[i], null, 2);
+                            pr.img.src = '/frames/plant_'+i+'_highlight.jpg?t=' + Date.now();
+                            pr.topic.textContent = `plantvision/${cam.room}/${cam.area}/${cam.camera_id}/${cam.plant_id}/telemetry/plants/${i}/telemetry`;
+                        }
+                    }catch(e){}
+                }
+                function refreshImages(){
+                    const t = Date.now();
+                    document.getElementById('img-raw').src = '/frames/frame_raw.jpg?t='+t;
+                    document.getElementById('img-ann').src = '/frames/frame_annotated.jpg?t='+t;
+                }
+                loadCameras();
+                setInterval(loadCameras, 5000);
+                setInterval(refreshAI, 3000);
+                setInterval(refreshTelemetry, 1200);
+                setInterval(refreshImages, 2000);
+                refreshAI(); refreshTelemetry(); refreshImages();
+            </script>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+@app.get("/settings", response_class=HTMLResponse)
+def settings_page():
+    html = """
+    <html>
+        <head>
+            <title>Settings</title>
+            <style>
+                :root { --bg:#0b1220; --fg:#e8eefb; --card:#111a2e; --accent:#4f8cff; }
+                body { font-family: Arial, sans-serif; margin: 0; background: var(--bg); color: var(--fg); }
+                header.nav { display:flex; align-items:center; gap:1rem; padding:.75rem 1rem; border-bottom:1px solid #223; position:sticky; top:0; background:rgba(11,18,32,.95); backdrop-filter: blur(6px); }
+                header.nav h2 { margin:0; font-size:1.1rem; }
+                header.nav a { color: var(--fg); text-decoration:none; opacity:.9; }
+                header.nav .spacer { flex:1; }
+                header.nav .icons a { padding:.25rem .5rem; border-radius:6px; }
+                main { padding: 1rem; max-width: 900px; margin: 0 auto; }
+                .card { background: var(--card); border:1px solid #223; border-radius:10px; padding:1rem; }
+                label { display:block; margin-top: .6rem; font-size:.95rem; opacity:.9; }
+                input, select { width: 100%; padding: .6rem .7rem; background:#0f172a; color:var(--fg); border:1px solid #223; border-radius:8px; }
+                button { margin-top: .75rem; padding: .6rem 1rem; background: var(--accent); color:white; border:none; border-radius:8px; cursor:pointer; }
+                .grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
+                .muted { opacity:.8; }
+                .row { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; }
             </style>
         </head>
         <body>
@@ -107,140 +238,140 @@ def index(request: Request):
                 </nav>
             </header>
             <main>
-                <div class="grid2">
-                    <div class="card">
-                        <h3 class="muted">Raw Frame</h3>
-                        <img id="img-raw" src="/frames/frame_raw.jpg" />
-                    </div>
-                    <div class="card">
-                        <h3 class="muted">Annotated Frame</h3>
-                        <img id="img-ann" src="/frames/frame_annotated.jpg" />
-                    </div>
+                <div class="card">
+                    <h3 class="muted">MQTT</h3>
+                    <form id="cfg">
+                        <div class="grid">
+                            <div>
+                                <label>MQTT Host <input name="mqtt.host"/></label>
+                            </div>
+                            <div>
+                                <label>MQTT Port <input name="mqtt.port"/></label>
+                            </div>
+                        </div>
+                        <h3 class="muted" style="margin-top:1rem;">Cameras</h3>
+                        <div class="row">
+                            <div>
+                                <label>Select Camera
+                                    <select id="cam-select-settings"></select>
+                                </label>
+                            </div>
+                            <div>
+                                <button type="button" id="add-cam">+ Add Camera</button>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div>
+                                <label>Name <input name="camera.name" placeholder="Camera 0"/></label>
+                            </div>
+                            <div>
+                                <label>Camera ID <input name="camera.camera_id" placeholder="0"/></label>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div>
+                                <label>Plant ID <input name="camera.plant_id" placeholder="plant-1"/></label>
+                            </div>
+                            <div>
+                                <label>Room <input name="camera.room" placeholder="room-1"/></label>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div>
+                                <label>Area <input name="camera.area" placeholder="area-1"/></label>
+                            </div>
+                            <div>
+                                <label>Input Mode <input name="camera.input_mode" placeholder="IMAGE | CAMERA | NETWORK"/></label>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div>
+                                <label>Input Path <input name="camera.input_path"/></label>
+                            </div>
+                            <div>
+                                <label>Input URL (network) <input name="camera.input_url" placeholder="rtsp://... or http(s)://..."/></label>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div>
+                                <label>Threshold <input name="processing.threshold"/></label>
+                            </div>
+                            <div>
+                                <label>Publish Interval (ms) <input name="processing.publish_interval_ms"/></label>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div>
+                                <label>Scale px/cm <input name="processing.scale_px_per_cm"/></label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="save()">Save</button>
+                    </form>
                 </div>
-                <div id="plants"></div>
             </main>
             <script>
-                function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt) e.textContent=txt; return e; }
-                async function refreshTelemetry(){
-                    try{
-                        const r = await fetch('/api/latest');
-                        const d = await r.json();
-                        const txt = (d && d.latest) ? d.latest : '{}';
-                        // Try to parse plants
-                        let plants = [];
-                        try{ const o = JSON.parse(txt); plants = o.plants || []; }catch(e){}
-                        const cont = document.getElementById('plants');
-                        cont.innerHTML = '';
-                        for(let i=0;i<plants.length;i++){
-                            const row = el('div','row');
-                            const imgBox = el('div','card');
-                            const h3 = el('h3','muted','Plant '+i);
-                            const img = new Image();
-                            img.src = '/frames/plant_'+i+'_highlight.jpg?t=' + Date.now();
-                            imgBox.appendChild(h3); imgBox.appendChild(img);
-                            const dataBox = el('div','card');
-                            const pre = el('pre','telemetry'); pre.id = 'plant-pre-'+i; pre.textContent = JSON.stringify(plants[i], null, 2);
-                            dataBox.appendChild(el('h3','muted','Telemetry'));
-                            dataBox.appendChild(pre);
-                            row.appendChild(imgBox); row.appendChild(dataBox);
-                            cont.appendChild(row);
-                        }
-                    }catch(e){}
+                function toNested(obj) { const out = {}; for (const [k, v] of Object.entries(obj)) { const parts = k.split('.'); let cur = out; for (let i = 0; i < parts.length; i++) { const p = parts[i]; if (i === parts.length - 1) { cur[p] = v; } else { if (!cur[p]) cur[p] = {}; cur = cur[p]; } } } return out; }
+                let cameras = [];
+                let camIdx = 0;
+                function bindCameraFields(){
+                    const form = document.getElementById('cfg');
+                    const c = cameras[camIdx] || {};
+                    form.elements['camera.name'].value = c.name || `Camera ${camIdx}`;
+                    form.elements['camera.camera_id'].value = c.camera_id || '0';
+                    form.elements['camera.plant_id'].value = c.plant_id || 'plant-1';
+                    form.elements['camera.room'].value = c.room || 'room-1';
+                    form.elements['camera.area'].value = c.area || 'area-1';
+                    form.elements['camera.input_mode'].value = c.input_mode || 'IMAGE';
+                    form.elements['camera.input_path'].value = c.input_path || '/samples/plant.jpg';
+                    form.elements['camera.input_url'].value = c.input_url || '';
                 }
-                function refreshImages(){
-                    const t = Date.now();
-                    document.getElementById('img-raw').src = '/frames/frame_raw.jpg?t='+t;
-                    document.getElementById('img-ann').src = '/frames/frame_annotated.jpg?t='+t;
+                function syncCameraFromFields(){
+                    const form = document.getElementById('cfg');
+                    const c = cameras[camIdx];
+                    c.name = form.elements['camera.name'].value;
+                    c.camera_id = form.elements['camera.camera_id'].value;
+                    c.plant_id = form.elements['camera.plant_id'].value;
+                    c.room = form.elements['camera.room'].value;
+                    c.area = form.elements['camera.area'].value;
+                    c.input_mode = form.elements['camera.input_mode'].value;
+                    c.input_path = form.elements['camera.input_path'].value;
+                    c.input_url = form.elements['camera.input_url'].value;
                 }
-                setInterval(refreshTelemetry, 1200);
-                setInterval(refreshImages, 2000);
-                refreshTelemetry();
-                refreshImages();
-            </script>
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html)
-@app.get("/settings", response_class=HTMLResponse)
-def settings_page():
-    html = """
-    <html>
-        <head>
-            <title>Settings</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 1.5rem; }
-                header { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; }
-                a { text-decoration: none; color: #0366d6; }
-                .card { border: 1px solid #eee; padding: 1rem; border-radius: 8px; max-width: 700px; }
-                label { display:block; margin-top: .5rem; }
-                input { width: 100%; padding: .5rem; }
-                button { margin-top: 1rem; padding: .5rem 1rem; }
-            </style>
-        </head>
-        <body>
-            <header>
-                <h2 style="margin:0;">PlantVision</h2>
-                <nav>
-                    <a href="/">Dashboard</a> |
-                    <a href="/settings">Settings</a>
-                </nav>
-            </header>
-            <div class="card">
-                <h3>Configuration</h3>
-                <form id="cfg">
-                    <label>MQTT Host <input name="mqtt.host"/></label>
-                    <label>MQTT Port <input name="mqtt.port"/></label>
-                    <label>Room <input name="uns.room"/></label>
-                    <label>Area <input name="uns.area"/></label>
-                    <label>Camera ID <input name="uns.camera_id"/></label>
-                    <label>Plant ID <input name="uns.plant_id"/></label>
-                    <label>Threshold <input name="processing.threshold"/></label>
-                    <label>Publish Interval (ms) <input name="processing.publish_interval_ms"/></label>
-                    <label>Scale px/cm <input name="processing.scale_px_per_cm"/></label>
-                    <label>Input Mode <input name="processing.input_mode"/></label>
-                    <label>Input Path <input name="processing.input_path"/></label>
-                    <button type="button" onclick="save()">Save</button>
-                </form>
-            </div>
-            <script>
-                function toNested(obj) {
-                    const out = {};
-                    for (const [k, v] of Object.entries(obj)) {
-                        const parts = k.split('.');
-                        let cur = out;
-                        for (let i = 0; i < parts.length; i++) {
-                            const p = parts[i];
-                            if (i === parts.length - 1) { cur[p] = v; }
-                            else { if (!cur[p]) cur[p] = {}; cur = cur[p]; }
-                        }
-                    }
-                    return out;
-                }
-                async function load() {
+                async function load(){
                     const res = await fetch('/api/config');
                     const cfg = await res.json();
                     const form = document.getElementById('cfg');
-                    for (const el of form.elements) {
-                        if (!el.name) continue;
-                        const parts = el.name.split('.');
-                        let cur = cfg;
-                        for (let i = 0; i < parts.length; i++) {
-                            const p = parts[i];
-                            if (i === parts.length - 1) { if (cur && p in cur) el.value = cur[p]; }
-                            else { if (cur && p in cur) cur = cur[p]; }
-                        }
-                    }
+                    form.elements['mqtt.host'].value = cfg.mqtt?.host || 'localhost';
+                    form.elements['mqtt.port'].value = cfg.mqtt?.port || 1883;
+                    cameras = cfg.cameras || [];
+                    if (cameras.length === 0) cameras = [{ name: 'Camera 0', camera_id:'0', plant_id:'plant-1', room:'room-1', area:'area-1', input_mode:'IMAGE', input_path:'/samples/plant.jpg', input_url:'' }];
+                    const sel = document.getElementById('cam-select-settings');
+                    sel.innerHTML = '';
+                    cameras.forEach((c, i)=>{ const opt=document.createElement('option'); opt.value=i; opt.textContent=c.name || ('Camera '+i); sel.appendChild(opt); });
+                    sel.onchange = ()=>{ syncCameraFromFields(); camIdx = parseInt(sel.value||'0'); bindCameraFields(); };
+                    bindCameraFields();
+                    form.elements['processing.threshold'].value = cfg.processing?.threshold || 100;
+                    form.elements['processing.publish_interval_ms'].value = cfg.processing?.publish_interval_ms || 1000;
+                    form.elements['processing.scale_px_per_cm'].value = cfg.processing?.scale_px_per_cm || 0;
+                    document.getElementById('add-cam').onclick = ()=>{
+                        syncCameraFromFields();
+                        cameras.push({ name: `Camera ${cameras.length}`, camera_id:String(cameras.length), plant_id:'plant-1', room:'room-1', area:'area-1', input_mode:'IMAGE', input_path:'/samples/plant.jpg', input_url:'' });
+                        const opt=document.createElement('option'); opt.value=cameras.length-1; opt.textContent=cameras[cameras.length-1].name; sel.appendChild(opt);
+                        sel.value = String(cameras.length-1); camIdx = cameras.length-1; bindCameraFields();
+                    };
                 }
-                async function save() {
-                    const fd = new FormData(document.getElementById('cfg'));
-                    const flat = {};
-                    for (const [k, v] of fd.entries()) flat[k] = v;
-                    const nested = toNested(flat);
-                    await fetch('/api/config', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(nested)
-                    });
-                    alert('Saved. The publisher will pick this up.');
+                async function save(){
+                    syncCameraFromFields();
+                    const form = document.getElementById('cfg');
+                    const flat = { 'mqtt.host': form.elements['mqtt.host'].value, 'mqtt.port': form.elements['mqtt.port'].value,
+                        'processing.threshold': form.elements['processing.threshold'].value,
+                        'processing.publish_interval_ms': form.elements['processing.publish_interval_ms'].value,
+                        'processing.scale_px_per_cm': form.elements['processing.scale_px_per_cm'].value };
+                    const body = toNested(flat);
+                    body.cameras = cameras;
+                    body.active_camera_index = camIdx;
+                    await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)} );
+                    alert('Saved');
                 }
                 window.addEventListener('DOMContentLoaded', load);
             </script>
@@ -277,6 +408,23 @@ async def api_config_set(payload: Dict[str, Any]):
     return JSONResponse(content={"ok": True, "config": state["config"]})
 
 
+@app.post("/api/set-active-camera")
+async def api_set_active_camera(payload: Dict[str, Any]):
+    try:
+        idx = int(payload.get('index', 0))
+        cfg = {}
+        if os.path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                cfg = pyjson.load(f)
+        cfg['active_camera_index'] = idx
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            pyjson.dump(cfg, f, indent=2)
+        return JSONResponse(content={"ok": True, "active_camera_index": idx})
+    except Exception as e:
+        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
+
+
 @app.get("/api/ai")
 def api_ai():
     try:
@@ -284,4 +432,25 @@ def api_ai():
             return JSONResponse(content=pyjson.load(f))
     except Exception:
         return JSONResponse(content={})
+
+
+@app.post("/api/plant-class")
+async def api_plant_class(payload: Dict[str, Any]):
+    # payload: { index: int, label: str }
+    try:
+        idx = str(payload.get('index'))
+        label = str(payload.get('label', 'unknown'))
+        overrides = {}
+        if os.path.exists(OVERRIDE_PATH):
+            with open(OVERRIDE_PATH, 'r', encoding='utf-8') as f:
+                overrides = pyjson.load(f)
+        if idx not in overrides:
+            overrides[idx] = {}
+        overrides[idx]['label'] = label
+        os.makedirs(os.path.dirname(OVERRIDE_PATH), exist_ok=True)
+        with open(OVERRIDE_PATH, 'w', encoding='utf-8') as f:
+            pyjson.dump(overrides, f, indent=2)
+        return JSONResponse(content={"ok": True, "overrides": overrides})
+    except Exception as e:
+        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
 

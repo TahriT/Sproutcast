@@ -1,7 +1,7 @@
 {
   "mqtt": {
     "host": "mqtt-broker",
-    "port": 1883
+    "port": "1883"
   },
   "uns": {
     "room": "room-1",
@@ -10,10 +10,183 @@
     "plant_id": "plant-1"
   },
   "processing": {
-    "threshold": 100,
-    "publish_interval_ms": 1000,
-    "scale_px_per_cm": 0.0,
+    "threshold": "100",
+    "publish_interval_ms": "1000",
+    "scale_px_per_cm": "0",
     "input_mode": "IMAGE",
     "input_path": "/samples/plant.jpg"
-  }
+  },
+  "cameras": [
+    {
+      "name": "Camera 0",
+      "camera_id": "0",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant2.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 1",
+      "camera_id": "1",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant2.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 2",
+      "camera_id": "2",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 3",
+      "camera_id": "3",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 4",
+      "camera_id": "4",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 5",
+      "camera_id": "5",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 6",
+      "camera_id": "6",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 7",
+      "camera_id": "7",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 8",
+      "camera_id": "8",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 9",
+      "camera_id": "9",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 10",
+      "camera_id": "10",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 11",
+      "camera_id": "11",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 12",
+      "camera_id": "12",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 13",
+      "camera_id": "13",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 14",
+      "camera_id": "14",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 15",
+      "camera_id": "15",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    },
+    {
+      "name": "Camera 16",
+      "camera_id": "16",
+      "plant_id": "plant-1",
+      "room": "room-1",
+      "area": "area-1",
+      "input_mode": "IMAGE",
+      "input_path": "/samples/plant.jpg",
+      "input_url": ""
+    }
+  ],
+  "active_camera_index": 2
 }
