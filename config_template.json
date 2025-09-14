@@ -1,0 +1,213 @@
+{
+  "version": "2.0.0",
+  "created": "2025-01-13T10:00:00Z",
+  "last_updated": "2025-01-13T10:00:00Z",
+  
+  "plant_types": {
+    "definitions": {
+      "basil": {
+        "sprout_characteristics": {
+          "max_area_pixels": 3000,
+          "max_height_cm": 6,
+          "leaf_shape": "oval",
+          "color_profile": { "hue_range": [25, 85], "saturation_min": 40 }
+        },
+        "plant_characteristics": {
+          "min_area_pixels": 8000,
+          "min_height_cm": 10,
+          "flowering_indicators": ["petal_detection", "color_change"],
+          "disease_markers": ["brown_spots", "yellowing", "wilting"]
+        }
+      },
+      "lettuce": {
+        "sprout_characteristics": {
+          "max_area_pixels": 2500,
+          "max_height_cm": 5,
+          "leaf_shape": "rounded",
+          "color_profile": { "hue_range": [20, 80], "saturation_min": 35 }
+        },
+        "plant_characteristics": {
+          "min_area_pixels": 12000,
+          "min_height_cm": 8,
+          "bolting_indicators": ["stem_elongation", "flower_buds"],
+          "disease_markers": ["tip_burn", "bottom_rot"]
+        }
+      }
+    },
+    "classification_thresholds": {
+      "sprout_max_area": 5000,
+      "sprout_max_height_cm": 8,
+      "plant_min_confidence": 0.7
+    }
+  },
+
+  "processing": {
+    "global": {
+      "threshold": 100,
+      "publish_interval_ms": 1000,
+      "scale_px_per_cm": 4.2,
+      "enable_watershed": true,
+      "enable_advanced_health": true
+    },
+    "sprout_specific": {
+      "publish_interval_ms": 500,
+      "sensitivity_multiplier": 1.2,
+      "min_area_pixels": 50,
+      "max_area_pixels": 5000,
+      "hue_range": [20, 90],
+      "morphology_kernel": 3
+    },
+    "plant_specific": {
+      "publish_interval_ms": 1000,
+      "min_area_pixels": 100,
+      "enable_petal_detection": true,
+      "enable_fruit_detection": true,
+      "disease_detection": true,
+      "morphology_kernel": 5
+    }
+  },
+
+  "cameras": [
+    {
+      "id": "cam-0",
+      "name": "Main Growing Area", 
+      "location": {
+        "room": "greenhouse-a",
+        "area": "shelf-1",
+        "position": { "x": 0, "y": 0, "height": 100 }
+      },
+      "input": {
+        "mode": "IMAGE",
+        "path": "/samples/plant.jpg",
+        "url": "",
+        "device_id": 0
+      },
+      "processing_overrides": {
+        "threshold": 95,
+        "scale_px_per_cm": 4.5,
+        "focus_area": { "x": 100, "y": 50, "width": 500, "height": 400 }
+      },
+      "output": {
+        "save_images": true,
+        "image_quality": 90,
+        "enable_base64": true
+      }
+    },
+    {
+      "id": "cam-1",
+      "name": "Seedling Tray",
+      "location": {
+        "room": "greenhouse-a", 
+        "area": "propagation",
+        "position": { "x": 200, "y": 0, "height": 80 }
+      },
+      "input": {
+        "mode": "CAMERA",
+        "path": "",
+        "url": "",
+        "device_id": 1
+      },
+      "processing_overrides": {
+        "threshold": 85,
+        "scale_px_per_cm": 6.0,
+        "sprout_focus": true
+      },
+      "output": {
+        "save_images": true,
+        "image_quality": 85,
+        "enable_base64": false
+      }
+    }
+  ],
+
+  "mqtt": {
+    "broker": {
+      "host": "mqtt-broker",
+      "port": 1883,
+      "username": "",
+      "password": "",
+      "client_id": "plantvision-main"
+    },
+    "topics": {
+      "base": "plantvision",
+      "system_status": "{base}/{room}/{area}/{camera_id}/system/status",
+      "analysis_telemetry": "{base}/{room}/{area}/{camera_id}/analysis/telemetry",
+      "sprout_telemetry": "{base}/{room}/{area}/{camera_id}/sprouts/{id}/telemetry",
+      "plant_telemetry": "{base}/{room}/{area}/{camera_id}/plants/{id}/telemetry",
+      "alerts": "{base}/{room}/{area}/{camera_id}/alerts"
+    },
+    "qos": {
+      "telemetry": 0,
+      "alerts": 1,
+      "status": 1
+    },
+    "retain": {
+      "status": true,
+      "telemetry": false,
+      "alerts": false
+    }
+  },
+
+  "data_management": {
+    "retention": {
+      "raw_images_days": 7,
+      "crop_images_days": 30,
+      "json_data_days": 365,
+      "archive_after_days": 90
+    },
+    "storage": {
+      "max_disk_usage_mb": 5000,
+      "cleanup_threshold": 0.9,
+      "compress_archives": true
+    },
+    "backup": {
+      "enabled": true,
+      "interval_hours": 24,
+      "max_backups": 7,
+      "include_images": false
+    }
+  },
+
+  "web_interface": {
+    "server": {
+      "host": "0.0.0.0",
+      "port": 8000,
+      "enable_cors": true
+    },
+    "features": {
+      "enable_setup_wizard": true,
+      "enable_manual_classification": true,
+      "enable_export": true,
+      "enable_historical_charts": true
+    },
+    "display": {
+      "default_tab": "all",
+      "refresh_interval_ms": 1200,
+      "thumbnail_size": 120,
+      "max_instances_per_page": 50
+    }
+  },
+
+  "alerts": {
+    "health_threshold": 50,
+    "growth_stagnation_days": 7,
+    "disease_detection": true,
+    "system_errors": true,
+    "notification_methods": ["mqtt", "web"]
+  },
+
+  "ai_integration": {
+    "enabled": false,
+    "model_path": "/app/models/",
+    "confidence_threshold": 0.75,
+    "features": {
+      "disease_detection": false,
+      "growth_prediction": false,
+      "species_classification": false
+    }
+  },
+
+  "active_camera_index": 0,
+  "debug_mode": false,
+  "log_level": "INFO"
+}

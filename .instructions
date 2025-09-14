@@ -1,0 +1,249 @@
+# PlantVision Project Instructions
+
+## Project Overview
+PlantVision is a comprehensive plant monitoring system that combines computer vision, AI, and IoT technologies to analyze plant health, growth, and characteristics. The system consists of:
+
+- **C++ OpenCV Application**: Core image processing and plant detection
+- **Python FastAPI Web UI**: Configuration and monitoring dashboard
+- **AI Service**: Local AI models for plant classification and depth estimation
+- **MQTT Broker**: Data distribution and telemetry
+- **Docker Compose**: Containerized deployment
+
+## Architecture
+
+### Services
+1. **mqtt-broker** (Mosquitto): MQTT message broker
+2. **cpp-app**: C++ OpenCV application for plant detection
+3. **web-ui**: FastAPI web interface for configuration and monitoring
+4. **ai-service**: Python AI service for classification and depth estimation
+
+### Data Flow
+1. C++ app processes images (camera/network/file) using OpenCV
+2. Detects multiple plants using watershed segmentation
+3. Publishes telemetry data via MQTT with UNS structure
+4. Saves processed images and plant data to shared volume
+5. Web UI displays real-time data and allows configuration
+6. AI service provides plant classification and health metrics
+
+## File Structure
+
+```
+PlantVision/
+├── docker-compose.yml          # Multi-service orchestration
+├── mqtt/
+│   └── mosquitto.conf         # MQTT broker configuration
+├── cpp/                       # C++ OpenCV application
+│   ├── Dockerfile
+│   ├── CMakeLists.txt
+│   ├── include/
+│   │   ├── mqtt_client.hpp
+│   │   └── leaf_area.hpp
+│   └── src/
+│       ├── main.cpp
+│       ├── mqtt_client.cpp
+│       └── leaf_area.cpp
+├── web/                       # FastAPI web interface
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── main.py
+│   └── static/
+├── ai/                        # AI service
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── main.py
+├── samples/                   # Sample plant images
+├── data/                      # Shared data volume
+│   ├── config.json           # Configuration
+│   ├── frame_raw.jpg         # Raw input image
+│   ├── frame_annotated.jpg   # Annotated output
+│   ├── plant_*.jpg           # Individual plant crops
+│   ├── plant_*.json          # Plant telemetry data
+│   └── ai_metrics.json       # AI analysis results
+└── models/                    # AI model files
+    └── dpt_swin2_tiny_256.pt # Depth estimation model
+```
+
+## Key Features
+
+### Plant Detection & Analysis
+- **Multi-plant detection**: Uses watershed algorithm to separate adjacent plants
+- **Leaf area calculation**: HSV color masking with Otsu thresholding fallback
+- **Bounding box extraction**: Individual plant regions and crops
+- **Real-time processing**: Configurable input modes (camera, network, file)
+
+### MQTT Telemetry
+- **Unified Namespace (UNS)**: `plantvision/{room}/{area}/{camera_id}/{plant_id}/telemetry`
+- **Per-plant topics**: Individual telemetry for each detected plant
+- **JSON payload**: Structured data including area, bounding box, label, color
+- **Configurable broker**: External MQTT broker support
+
+### Web Interface
+- **Dashboard**: Real-time plant monitoring with image display
+- **Settings**: Configuration management for cameras, MQTT, processing
+- **Plant Gallery**: Grid view of detected plants with classification
+- **Multi-camera support**: Add/switch between multiple camera streams
+- **Manual classification**: Override AI classifications with dropdown
+
+### AI Integration
+- **Plant classification**: MobileNetV3/SqueezeNet models
+- **Depth estimation**: MiDaS DPT-Tiny for height estimation
+- **Health monitoring**: Color, shape, and size analysis
+- **Deviation detection**: Re-run AI only when plant characteristics change
+- **Local processing**: No external API calls required
+
+## Configuration
+
+### config.json Structure
+```json
+{
+  "mqtt": {
+    "host": "mqtt-broker",
+    "port": "1883"
+  },
+  "uns": {
+    "room": "room-1",
+    "area": "area-1", 
+    "camera_id": "0",
+    "plant_id": "plant-1"
+  },
+  "processing": {
+    "threshold": "100",
+    "publish_interval_ms": "1000",
+    "scale_px_per_cm": "0",
+    "input_mode": "IMAGE",
+    "input_path": "/samples/plant.jpg"
+  },
+  "cameras": [...],
+  "active_camera_index": 0
+}
+```
+
+### Input Modes
+- **IMAGE**: Process static image files
+- **CAMERA**: Use local camera device
+- **NETWORK**: Stream from network camera URL
+
+## Setup & Running
+
+### Prerequisites
+- Docker Desktop (Windows)
+- Git
+
+### Quick Start
+1. Clone repository: `git clone <repo-url>`
+2. Place sample images in `samples/` directory
+3. Start services: `docker-compose up --build`
+4. Access web UI: http://localhost:8001
+5. Configure settings and select camera
+
+### Manual Model Setup
+If auto-download fails, manually place models in `models/`:
+- `dpt_swin2_tiny_256.pt` - MiDaS depth estimation
+- `mobilenet_v3_small.onnx` - Plant classification
+- `imagenet_classes.txt` - Classification labels
+
+## Development Notes
+
+### C++ Application
+- Uses OpenCV for image processing
+- Paho MQTT for message publishing
+- nlohmann/json for configuration
+- CMake build system
+- Hot-reloads configuration changes
+
+### Web Interface
+- FastAPI with Jinja2 templates
+- Real-time updates via JavaScript
+- ORJSON for fast JSON processing
+- Static file serving for images
+- MQTT client for telemetry
+
+### AI Service
+- PyTorch/ONNX Runtime for inference
+- Automatic model downloading
+- Deviation-based re-inference
+- Depth estimation and classification
+- Health metrics calculation
+
+## Troubleshooting
+
+### Common Issues
+1. **Docker not running**: Ensure Docker Desktop is started
+2. **Port conflicts**: Change ports in docker-compose.yml
+3. **Empty plant gallery**: Check if C++ app is running and generating data
+4. **Model download errors**: Manually download models to models/ directory
+5. **MQTT connection**: Verify broker is running and accessible
+
+### Debugging
+- Check container logs: `docker-compose logs <service-name>`
+- Verify data files in `data/` directory
+- Test MQTT connection with external client
+- Check web UI browser console for JavaScript errors
+
+## Future Enhancements
+- ONNX Runtime C++ integration for faster inference
+- Real-time camera streaming
+- Advanced plant health algorithms
+- Database storage for historical data
+- Mobile app interface
+- Cloud deployment options
+
+## API Endpoints
+
+### Web UI
+- `GET /` - Dashboard
+- `GET /settings` - Settings page
+- `GET /api/config` - Get configuration
+- `POST /api/config` - Update configuration
+- `GET /api/latest` - Get latest telemetry
+- `GET /api/ai` - Get AI metrics
+- `GET /api/plant-data/{id}` - Get plant data
+- `POST /api/plant-class` - Set plant classification
+- `POST /api/set-active-camera` - Switch active camera
+
+### Static Files
+- `/frames/*.jpg` - Processed images
+- `/static/*` - Web assets
+
+## MQTT Topics
+
+### Main Telemetry
+`plantvision/{room}/{area}/{camera_id}/{plant_id}/telemetry`
+
+### Per-Plant Topics
+`plantvision/{room}/{area}/{camera_id}/{plant_id}/telemetry/plants/{i}/telemetry`
+
+### AI Metrics
+`plantvision/{room}/{area}/{camera_id}/{plant_id}/ai`
+
+## Data Formats
+
+### Plant Telemetry JSON
+```json
+{
+  "timestamp": "2025-09-10T22:16:37Z",
+  "plants": [
+    {
+      "label": "basil",
+      "area": 1234.5,
+      "bbox": [100, 200, 150, 300],
+      "mean_bgr": [45, 120, 67],
+      "contour_count": 3
+    }
+  ]
+}
+```
+
+### AI Metrics JSON
+```json
+{
+  "timestamp": "2025-09-10T22:16:37Z",
+  "depth_median": 0.85,
+  "height_norm": 0.42,
+  "classification": "basil",
+  "confidence": 0.92,
+  "health_score": 0.88
+}
+```
+
+This system provides a complete solution for automated plant monitoring with real-time analysis, configurable inputs, and extensible architecture for future enhancements.

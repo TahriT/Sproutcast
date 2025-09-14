@@ -77,7 +77,7 @@ bool MqttClient::connect() {
     uint16_t keepalive = htons(60);
     payload.append(reinterpret_cast<const char*>(&keepalive), 2);
 
-    append_utf8_string(payload, "plantvision-client");
+    append_utf8_string(payload, "sproutcast-client");
 
     std::string remaining_length = encode_varint(static_cast<uint32_t>(payload.size()));
     std::string packet;

@@ -1,11 +1,21 @@
-# PlantVision
+# SproutCast
 
-End-to-end example to estimate plant leaf area using OpenCV (C++) and publish via MQTT, with a FastAPI web UI for configuration and monitoring. Runs via Docker Compose and includes a Mosquitto broker.
+End-to-end real-time plant monitoring system with advanced morphological analysis using OpenCV (C++), AI-powered insights, and casting capability for dashboard viewing. Features comprehensive plant phenotyping including branch/tip analysis, disease detection, and enhanced color analysis with vegetation indices.
 
 ## Stack
-- C++ OpenCV app estimates leaf area and publishes JSON to `plant/area`
-- Mosquitto MQTT broker
-- FastAPI web UI subscribes to topic and shows latest payload
+- C++ OpenCV app with advanced morphological analysis (skeleton analysis, branch/tip detection, disease monitoring)
+- AI component with change detection optimization for efficient processing
+- Mosquitto MQTT broker with SproutCast topic structure
+- FastAPI web UI with real-time dashboard and Google Cast support
+- Advanced plant phenotyping with NDVI, EXG color analysis, and health scoring
+
+## Key Features
+- 🌱 **Advanced Plant Analysis**: Branch/tip counting, skeleton analysis, morphological descriptors
+- 🔬 **Disease Detection**: Brown spot and yellowing identification with health scoring
+- 📊 **Enhanced Metrics**: NDVI, EXG vegetation indices, solidity, eccentricity, circularity
+- 🎯 **AI Optimization**: Change detection system to minimize AI processing overhead
+- 📺 **Casting Support**: Cast dashboard to any local cast device for real-time monitoring
+- 🚀 **Real-time Processing**: Optimized pipeline with configurable frame analysis intervals
 
 ## Prerequisites
 - Docker Desktop (Windows/macOS/Linux)

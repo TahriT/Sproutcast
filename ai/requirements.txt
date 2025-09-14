@@ -6,4 +6,5 @@ paho-mqtt==2.1.0
 orjson==3.10.7
 torch==2.3.1 --extra-index-url https://download.pytorch.org/whl/cpu
 requests==2.32.3
+timm==0.9.2
 
