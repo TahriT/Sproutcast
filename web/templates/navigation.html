@@ -1,565 +1,523 @@
-<!-- Consolidated Navigation Component - Common across all pages -->
-<style>
-    /* Persistent Navigation Styles */
-    :root { 
-        --bg:#0b1220; 
-        --fg:#e8eefb; 
-        --card:#111a2e; 
-        --accent:#4f8cff; 
-        --sprout:#10b981; 
-        --plant:#059669; 
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
     
-    /* Hamburger Menu Styles */
-    .hamburger { 
-        display: flex; 
-        flex-direction: column; 
-        cursor: pointer; 
-        padding: 0.5rem; 
-        margin-right: 0.5rem;
-        border-radius: 6px;
-        transition: background-color 0.2s;
-    }
-    .hamburger:hover { background: rgba(79, 140, 255, 0.1); }
-    .hamburger span { 
-        width: 20px; 
-        height: 2px; 
-        background: var(--fg); 
-        margin: 2px 0; 
-        border-radius: 1px;
-        transition: 0.3s;
-    }
-    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-    .hamburger.active span:nth-child(2) { opacity: 0; }
-    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
-    
-    /* Side Menu */
-    .side-menu {
-        position: fixed;
-        top: 0;
-        left: -280px;
-        width: 280px;
-        height: 100vh;
-        background: var(--card);
-        border-right: 1px solid #223;
-        transition: left 0.3s ease;
-        z-index: 1000;
-        padding-top: 1rem;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-    }
-    .side-menu.active { left: 0; }
-    .side-menu-header {
-        padding: 1rem;
-        border-bottom: 1px solid #223;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .side-menu-header h3 { margin: 0; font-size: 1.2rem; }
-    .side-menu-nav { padding: 1rem 0; }
-    .side-menu-nav a {
-        display: block;
-        padding: 0.75rem 1.5rem;
-        color: var(--fg);
-        text-decoration: none;
-        border-left: 3px solid transparent;
-        transition: all 0.2s;
-    }
-    .side-menu-nav a:hover, .side-menu-nav a.active {
-        background: rgba(79, 140, 255, 0.1);
-        border-left-color: var(--accent);
-    }
-    .side-menu-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0,0,0,0.5);
-        z-index: 999;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s;
-    }
-    .side-menu-overlay.active { opacity: 1; visibility: visible; }
-    
-    /* Top Navigation Bar */
-    header.nav { 
-        display:flex; 
-        align-items:center; 
-        gap:1rem; 
-        padding:.75rem 1rem; 
-        border-bottom:1px solid #223; 
-        position:sticky; 
-        top:0; 
-        background:rgba(11,18,32,.95); 
-        backdrop-filter: blur(6px);
-        z-index: 100;
-    }
-    header.nav h2 { 
-        margin:0; 
-        font-size:1.1rem; 
-    }
-    header.nav a { 
-        color: var(--fg); 
-        text-decoration:none; 
-        opacity:.9; 
-    }
-    header.nav .spacer { 
-        flex:1; 
-    }
-    header.nav .icons a { 
-        padding:.25rem .5rem; 
-        border-radius:6px; 
-    }
-    header.nav .icons a:hover {
-        background: rgba(79, 140, 255, 0.1);
-    }
-    header.nav select { 
-        background:#0f172a; 
-        color:var(--fg); 
-        border:1px solid #223; 
-        border-radius:8px; 
-        padding:.35rem .5rem; 
-    }
-    
-    /* Connection Status */
-    .status-indicator { 
-        display:inline-block; 
-        width:12px; 
-        height:12px; 
-        border-radius:50%; 
-        margin-right:0.5rem; 
-    }
-    .status-online { background:#10b981; }
-    .status-offline { background:#ef4444; }
-    
-    /* Model Status Notification */
-    .model-status {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        background: var(--card);
-        border: 1px solid #223;
-        border-radius: 8px;
-        padding: 1rem;
-        max-width: 300px;
-        z-index: 1001;
-        transform: translateX(350px);
-        transition: transform 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    .model-status.visible { transform: translateX(0); }
-    .model-status.error { border-color: #ef4444; }
-    .model-status.ready { border-color: #10b981; }
-    .model-status.downloading { border-color: var(--accent); }
-    .model-status-header { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        margin-bottom: 0.5rem; 
-    }
-    .model-status h4 { margin: 0; font-size: 0.9rem; }
-    .model-status-close { 
-        cursor: pointer; 
-        opacity: 0.7; 
-        font-size: 1.2rem; 
-    }
-    .model-status-close:hover { opacity: 1; }
-    .progress-bar { 
-        width: 100%; 
-        height: 4px; 
-        background: #223; 
-        border-radius: 2px; 
-        overflow: hidden; 
-        margin: 0.5rem 0; 
-    }
-    .progress-fill { 
-        height: 100%; 
-        background: var(--accent); 
-        transition: width 0.3s; 
-    }
-    
-    /* Cast Button */
-    .cast-btn { 
-        padding:0.5rem; 
-        background:var(--accent); 
-        color:white; 
-        border:none; 
-        border-radius:6px; 
-        cursor:pointer; 
-        margin-left:1rem; 
-        display:none; 
-    }
-    /* Camera Selector Styling */
-    #camera-selector {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    #camera-selector label {
-        font-size: 0.9rem;
-        opacity: 0.9;
-    }
-</style>
-
-<!-- Top Navigation Header -->
-<header class="nav">
-    <div class="hamburger" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-    <h2 id="page-title">🌿 SproutCast</h2>
-    <div class="spacer"></div>
-    
-    <!-- Connection Status -->
-    <div class="status-indicator status-online" id="connection-status"></div>
-    <span class="muted" id="connection-text">Connected</span>
-    
-    <!-- Camera Selector (shown on dashboard and setup) -->
-    <div id="camera-selector" style="display:none;">
-        <label class="muted">Camera</label>
-        <select id="cam-select"></select>
-    </div>
-    
-    <!-- Cast Button -->
-    <button id="cast-btn" class="cast-btn" onclick="initCasting()">📺 Cast</button>
-    
-    <!-- Top Navigation Links -->
-    <nav class="icons">
-        <a href="/" id="nav-dashboard">🏠 Dashboard</a>
-        <a href="/setup" id="nav-setup">🔧 Setup</a>
-        <a href="/settings" id="nav-settings">⚙️ Settings</a>
-    </nav>
-</header>
-
-<!-- Side Menu Overlay -->
-<div class="side-menu-overlay" onclick="closeMenu()"></div>
-
-<!-- Side Menu -->
-<div class="side-menu" id="side-menu">
-    <div class="side-menu-header">
-        <div>🌿</div>
-        <h3>SproutCast</h3>
-    </div>
-    <nav class="side-menu-nav">
-        <a href="/" id="side-dashboard">🏠 Dashboard</a>
-        <a href="/setup" id="side-setup">🔧 Setup & Analysis</a>
-        <a href="/settings" id="side-settings">⚙️ Settings</a>
-    </nav>
-</div>
-
-<!-- Model Status Notification -->
-<div class="model-status" id="model-status">
-    <div class="model-status-header">
-        <h4 id="model-status-title">AI Model Status</h4>
-        <span class="model-status-close" onclick="closeModelStatus()">×</span>
-    </div>
-    <div id="model-status-message">Checking model status...</div>
-    <div class="progress-bar">
-        <div class="progress-fill" id="model-progress" style="width: 0%"></div>
-    </div>
-</div>
-
-<script>
-// Global Navigation Functions
-let modelStatusVisible = false;
-let CAM_INDEX = 0;
-let cameras = [];
-
-// Hamburger menu functions
-function toggleMenu() {
-    const menu = document.getElementById('side-menu');
-    const overlay = document.querySelector('.side-menu-overlay');
-    const hamburger = document.querySelector('.hamburger');
-    
-    menu.classList.toggle('active');
-    overlay.classList.toggle('active');
-    hamburger.classList.toggle('active');
-}
-
-function closeMenu() {
-    const menu = document.getElementById('side-menu');
-    const overlay = document.querySelector('.side-menu-overlay');
-    const hamburger = document.querySelector('.hamburger');
-    
-    menu.classList.remove('active');
-    overlay.classList.remove('active');
-    hamburger.classList.remove('active');
-}
-
-// Model status functions
-async function checkModelStatus() {
-    try {
-        const response = await fetch('/api/model-status');
-        const status = await response.json();
-        updateModelStatus(status);
-    } catch (error) {
-        console.log('Model status check failed:', error);
-    }
-}
-
-function updateModelStatus(status) {
-    const statusDiv = document.getElementById('model-status');
-    const title = document.getElementById('model-status-title');
-    const message = document.getElementById('model-status-message');
-    const progress = document.getElementById('model-progress');
-    
-    // Remove existing status classes
-    statusDiv.classList.remove('error', 'ready', 'downloading', 'loading');
-    
-    if (status.status === 'ready') {
-        title.textContent = `✓ ${status.model_name} Ready`;
-        message.textContent = status.message || 'Model loaded and ready for inference';
-        progress.style.width = '100%';
-        statusDiv.classList.add('ready');
-        
-        // Auto-hide ready status after 5 seconds
-        if (modelStatusVisible) {
-            setTimeout(() => closeModelStatus(), 5000);
-        }
-    } else if (status.status === 'downloading') {
-        title.textContent = `⬇ Downloading ${status.model_name}`;
-        message.textContent = status.message || 'Downloading model...';
-        progress.style.width = status.progress + '%';
-        statusDiv.classList.add('downloading');
-        showModelStatus();
-    } else if (status.status === 'loading') {
-        title.textContent = `⚙ Loading ${status.model_name}`;
-        message.textContent = status.message || 'Loading model into memory...';
-        progress.style.width = '50%';
-        statusDiv.classList.add('downloading');
-        showModelStatus();
-    } else if (status.status === 'error') {
-        title.textContent = `⚠ Model Error`;
-        message.textContent = status.message || 'Model loading failed';
-        progress.style.width = '0%';
-        statusDiv.classList.add('error');
-        showModelStatus();
-    }
-}
-
-function showModelStatus() {
-    const statusDiv = document.getElementById('model-status');
-    statusDiv.classList.add('visible');
-    modelStatusVisible = true;
-}
-
-function closeModelStatus() {
-    const statusDiv = document.getElementById('model-status');
-    statusDiv.classList.remove('visible');
-    modelStatusVisible = false;
-}
-
-// Camera management
-async function loadCameras() {
-    try {
-        const r = await fetch('/api/config');
-        const cfg = await r.json();
-        cameras = cfg.cameras || [{ camera_id: cfg.uns?.camera_id || '0', name: 'Camera 0' }];
-        const sel = document.getElementById('cam-select');
-        if (sel) {
-            sel.innerHTML = '';
-            cameras.forEach((c, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = c.name || `Camera ${c.camera_id || idx}`;
-                sel.appendChild(opt);
-            });
-            sel.value = cfg.active_camera_index || 0;
-            CAM_INDEX = parseInt(sel.value || '0');
-            sel.onchange = async () => {
-                CAM_INDEX = parseInt(sel.value || '0');
-                await fetch('/api/set-active-camera', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ index: CAM_INDEX })
-                });
-                // Trigger refresh if functions exist
-                if (typeof refreshTelemetry === 'function') refreshTelemetry();
-                if (typeof refreshImages === 'function') refreshImages();
-            };
+    <!-- Consolidated Navigation Component - Common across all pages -->
+    <style>
+        /* Persistent Navigation Styles */
+        :root { 
+            --bg:#0b1220; 
+            --fg:#e8eefb; 
+            --card:#111a2e; 
+            --accent:#4f8cff; 
+            --sprout:#10b981; 
+            --plant:#059669; 
         }
         
-        // Update connection status
-        document.getElementById('connection-status').className = 'status-indicator status-online';
-        document.getElementById('connection-text').textContent = 'Connected';
-    } catch (e) {
-        document.getElementById('connection-status').className = 'status-indicator status-offline';
-        document.getElementById('connection-text').textContent = 'Offline';
-    }
-}
-
-// Initialize page-specific navigation
-function initNavigation(pageName, options = {}) {
-    // Set page title
-    const title = document.getElementById('page-title');
-    if (title) {
-        const pageTitle = {
-            'dashboard': '🌿 SproutCast Dashboard',
-            'setup': '🔧 SproutCast Setup',
-            'settings': '⚙️ SproutCast Settings'
-        };
-        title.textContent = pageTitle[pageName] || '🌿 SproutCast';
-    }
-    
-    // Show/hide camera selector
-    const cameraSelector = document.getElementById('camera-selector');
-    if (cameraSelector) {
-        cameraSelector.style.display = (options.showCameraSelector) ? 'flex' : 'none';
-    }
-    
-    // Set active navigation states
-    document.querySelectorAll('#nav-dashboard, #nav-setup, #nav-settings, #side-dashboard, #side-setup, #side-settings')
-        .forEach(link => link.classList.remove('active'));
-    
-    const activeNavId = `nav-${pageName}`;
-    const activeSideId = `side-${pageName}`;
-    
-    const activeNav = document.getElementById(activeNavId);
-    const activeSide = document.getElementById(activeSideId);
-    
-    if (activeNav) activeNav.classList.add('active');
-    if (activeSide) activeSide.classList.add('active');
-    
-    // Initialize common functionality
-    loadCameras();
-    checkModelStatus();
-    
-    // Set up refresh intervals
-    setInterval(loadCameras, 5000);
-    setInterval(checkModelStatus, 10000);
-    
-    // Initialize casting if supported
-    initializeCastApi();
-}
-
-// Casting functionality
-let castSession = null;
-let isCasting = false;
-
-function initializeCastApi() {
-    if (typeof window !== 'undefined') {
-        window['__onGCastApiAvailable'] = function(isAvailable) {
-            if (isAvailable) {
-                initializeCastApiInternal();
-            }
-        };
+        /* Base Styles */
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--fg); 
+        }
         
-        // Load Cast SDK script
-        const castScript = document.createElement('script');
-        castScript.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-        document.head.appendChild(castScript);
-    }
-}
+        /* Main Content Area */
+        main { 
+            padding: 1rem; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        
+        /* Common Components */
+        .card { 
+            background: var(--card); 
+            border:1px solid #223; 
+            border-radius:10px; 
+            padding:1rem; 
+            margin-bottom: 1rem; 
+        }
+        
+        .grid2 { 
+            display:grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap:1rem; 
+        }
+        
+        .img-wrap { 
+            width:100%; 
+            height:300px; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            border:1px solid #223; 
+            border-radius:8px; 
+            cursor: pointer;
+        }
+        
+        .img-wrap img { 
+            max-width:100%; 
+            max-height:100%; 
+            border-radius:8px; 
+            object-fit: contain; 
+        }
+        
+        button { 
+            padding: .6rem 1rem; 
+            background: var(--accent); 
+            color:white; 
+            border:none; 
+            border-radius:8px; 
+            cursor:pointer; 
+            margin: 0.25rem; 
+        }
+        
+        button:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+        
+        button:hover:not(:disabled) { 
+            opacity: 0.9; 
+        }
+        
+        .muted { 
+            opacity:.8; 
+        }
+        
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-card {
+            background: var(--card);
+            border: 1px solid #223;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .summary-card.sprouts {
+            border-left: 4px solid var(--sprout);
+        }
+        
+        .summary-card.plants {
+            border-left: 4px solid var(--plant);
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+            color: var(--accent);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid #223;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover, .tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .gallery-item {
+            background: var(--card);
+            border: 1px solid #223;
+            border-radius: 8px;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+        
+        .modal-content {
+            background-color: var(--card);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 1px solid #223;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            position: relative;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--fg);
+        }
+        
+        /* Hamburger Menu Styles */
+        .hamburger { 
+            display: flex; 
+            flex-direction: column; 
+            cursor: pointer; 
+            padding: 0.5rem; 
+            margin-right: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .hamburger:hover { background: rgba(79, 140, 255, 0.1); }
+        .hamburger span { 
+            width: 20px; 
+            height: 2px; 
+            background: var(--fg); 
+            margin: 2px 0; 
+            border-radius: 1px;
+            transition: 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+        
+        /* Side Menu */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: var(--card);
+            border-right: 1px solid #223;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            padding-top: 1rem;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        .side-menu.active { left: 0; }
+        .side-menu-header {
+            padding: 1rem;
+            border-bottom: 1px solid #223;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .side-menu-header h3 { margin: 0; font-size: 1.2rem; }
+        .side-menu-nav { padding: 1rem 0; }
+        .side-menu-nav a {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--fg);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .side-menu-nav a:hover, .side-menu-nav a.active {
+            background: rgba(79, 140, 255, 0.1);
+            border-left-color: var(--accent);
+        }
+        .side-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        .side-menu-overlay.active { opacity: 1; visibility: visible; }
+        
+        /* Top Navigation Bar */
+        header.nav { 
+            display:flex; 
+            align-items:center; 
+            gap:1rem; 
+            padding:.75rem 1rem; 
+            border-bottom:1px solid #223; 
+            position:sticky; 
+            top:0; 
+            background:rgba(11,18,32,.95); 
+            backdrop-filter: blur(6px);
+            z-index: 100;
+        }
+        header.nav h2 { 
+            margin:0; 
+            font-size:1.1rem; 
+        }
+        header.nav a { 
+            color: var(--fg); 
+            text-decoration:none; 
+            opacity:.9; 
+        }
+        header.nav .spacer { 
+            flex:1; 
+        }
+        header.nav .icons a { 
+            padding:.25rem .5rem; 
+            border-radius:6px; 
+        }
+        header.nav .icons a:hover {
+            background: rgba(79, 140, 255, 0.1);
+        }
+        header.nav .icons a.active {
+            background: rgba(79, 140, 255, 0.2);
+            color: var(--accent);
+        }
+        header.nav select { 
+            background:#0f172a; 
+            color:var(--fg); 
+            border:1px solid #223; 
+            border-radius:8px; 
+            padding:.35rem .5rem; 
+        }
+        
+        /* Connection Status */
+        .status-indicator { 
+            display:inline-block; 
+            width:12px; 
+            height:12px; 
+            border-radius:50%; 
+            margin-right:0.5rem; 
+        }
+        .status-online { background:#10b981; }
+        .status-offline { background:#ef4444; }
+        
+        /* Camera Selector Styling */
+        #camera-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #camera-selector label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="nav">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <h2 id="page-title">{{TITLE}}</h2>
+        <div class="spacer"></div>
+        
+        <!-- Connection Status -->
+        <div class="status-indicator status-online" id="connection-status"></div>
+        <span class="muted" id="connection-text">Connected</span>
+        
+        <!-- Camera Selector (shown on dashboard and setup) -->
+        <div id="camera-selector" style="display: none;">
+            <label class="muted">Camera</label>
+            <select id="cam-select"></select>
+        </div>
+        
+        <!-- Top Navigation Links -->
+        <nav class="icons">
+            <a href="/" id="nav-dashboard">🏠 Dashboard</a>
+            <a href="/setup" id="nav-setup">🔧 Setup</a>
+            <a href="/settings" id="nav-settings">⚙️ Settings</a>
+        </nav>
+    </header>
 
-function initializeCastApiInternal() {
-    if (typeof chrome !== 'undefined' && chrome.cast && chrome.cast.isAvailable) {
-        const sessionRequest = new chrome.cast.SessionRequest(chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID);
-        const apiConfig = new chrome.cast.ApiConfig(sessionRequest, sessionListener, receiverListener);
-        chrome.cast.initialize(apiConfig, onCastInitSuccess, onCastError);
-        document.getElementById('cast-btn').classList.add('available');
-    }
-}
+    <!-- Side Menu Overlay -->
+    <div class="side-menu-overlay" onclick="closeMenu()"></div>
 
-function sessionListener(session) {
-    castSession = session;
-    if (session.media.length != 0) {
-        onMediaDiscovered('onRequestSessionSuccess', session.media[0]);
-    }
-    session.addUpdateListener(sessionUpdateListener);
-    session.addMediaListener(onMediaDiscovered);
-    session.addMessageListener('urn:x-cast:com.google.cast.media', onMediaStatusUpdate);
-    isCasting = true;
-    document.getElementById('cast-btn').textContent = '📺 Stop Cast';
-}
+    <!-- Side Menu -->
+    <div class="side-menu" id="side-menu">
+        <div class="side-menu-header">
+            <div>🌿</div>
+            <h3>SproutCast</h3>
+        </div>
+        <nav class="side-menu-nav">
+            <a href="/" id="side-dashboard">🏠 Dashboard</a>
+            <a href="/setup" id="side-setup">🔧 Setup & Analysis</a>
+            <a href="/settings" id="side-settings">⚙️ Settings</a>
+        </nav>
+    </div>
 
-function sessionUpdateListener(isAlive) {
-    if (!isAlive) {
-        castSession = null;
-        isCasting = false;
-        document.getElementById('cast-btn').textContent = '📺 Cast';
-    }
-}
+    <!-- Main Content -->
+    <main>
+        {{CONTENT}}
+    </main>
 
-function receiverListener(e) {
-    if (e === chrome.cast.ReceiverAvailability.AVAILABLE) {
-        document.getElementById('cast-btn').classList.add('available');
-    }
-}
+    <script>
+        // Global Navigation Functions
+        let CAM_INDEX = 0;
+        let cameras = [];
 
-function onCastInitSuccess() {
-    console.log('Cast API initialized successfully');
-}
+        // Hamburger menu functions
+        function toggleMenu() {
+            const menu = document.getElementById('side-menu');
+            const overlay = document.querySelector('.side-menu-overlay');
+            const hamburger = document.querySelector('.hamburger');
+            
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
 
-function onCastError(error) {
-    console.log('Cast error: ' + error);
-}
+        function closeMenu() {
+            const menu = document.getElementById('side-menu');
+            const overlay = document.querySelector('.side-menu-overlay');
+            const hamburger = document.querySelector('.hamburger');
+            
+            menu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
 
-function onMediaDiscovered(how, mediaSession) {
-    console.log('Media discovered: ' + how);
-}
-
-function onMediaStatusUpdate(isAlive) {
-    console.log('Media status update: ' + isAlive);
-}
-
-function initCasting() {
-    if (isCasting && castSession) {
-        // Stop casting
-        castSession.stop(
-            function() {
-                castSession = null;
-                isCasting = false;
-                document.getElementById('cast-btn').textContent = '📺 Cast';
-            },
-            function(error) {
-                console.log('Error stopping cast: ' + error);
-            }
-        );
-    } else {
-        // Start casting
-        if (typeof chrome !== 'undefined' && chrome.cast && chrome.cast.isAvailable) {
-            chrome.cast.requestSession(
-                function(session) {
-                    castSession = session;
-                    sessionListener(session);
-                    
-                    // Cast the current dashboard URL
-                    const mediaInfo = new chrome.cast.media.MediaInfo(window.location.origin + '/', 'text/html');
-                    mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-                    mediaInfo.metadata.title = 'SproutCast Dashboard';
-                    mediaInfo.metadata.subtitle = 'Real-time Plant Monitoring';
-                    
-                    const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                    
-                    session.loadMedia(request,
-                        function(media) {
-                            console.log('Media loaded successfully');
-                        },
-                        function(error) {
-                            console.log('Error loading media: ' + error);
-                        }
-                    );
-                },
-                function(error) {
-                    console.log('Error requesting session: ' + error);
+        // Camera management
+        async function loadCameras() {
+            try {
+                const r = await fetch('/api/config');
+                const cfg = await r.json();
+                cameras = cfg.cameras || [{ camera_id: cfg.uns?.camera_id || '0', name: 'Camera 0' }];
+                const sel = document.getElementById('cam-select');
+                if (sel) {
+                    sel.innerHTML = '';
+                    cameras.forEach((c, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = idx;
+                        opt.textContent = c.name || `Camera ${c.camera_id || idx}`;
+                        sel.appendChild(opt);
+                    });
+                    sel.value = cfg.active_camera_index || 0;
+                    CAM_INDEX = parseInt(sel.value || '0');
+                    sel.onchange = async () => {
+                        CAM_INDEX = parseInt(sel.value || '0');
+                        await fetch('/api/set-active-camera', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ index: CAM_INDEX })
+                        });
+                        // Trigger refresh if functions exist
+                        if (typeof refreshTelemetry === 'function') refreshTelemetry();
+                        if (typeof refreshImages === 'function') refreshImages();
+                    };
                 }
-            );
-        } else {
-            alert('Google Cast is not available on this device. Please use a Chrome browser on a device with casting capability.');
+                
+                // Update connection status
+                document.getElementById('connection-status').className = 'status-indicator status-online';
+                document.getElementById('connection-text').textContent = 'Connected';
+            } catch (e) {
+                document.getElementById('connection-status').className = 'status-indicator status-offline';
+                document.getElementById('connection-text').textContent = 'Offline';
+            }
         }
-    }
-}
 
-// Close side menu when clicking outside
-window.addEventListener('click', function(event) {
-    const menu = document.getElementById('side-menu');
-    const hamburger = document.querySelector('.hamburger');
-    
-    if (!menu.contains(event.target) && !hamburger.contains(event.target)) {
-        closeMenu();
-    }
-});
-</script>
+        // Set active navigation state
+        function setActiveNavigation(pageName) {
+            // Remove active class from all nav items
+            document.querySelectorAll('#nav-dashboard, #nav-setup, #nav-settings, #side-dashboard, #side-setup, #side-settings')
+                .forEach(link => link.classList.remove('active'));
+            
+            // Add active class to current page
+            const activeNavId = `nav-${pageName}`;
+            const activeSideId = `side-${pageName}`;
+            
+            const activeNav = document.getElementById(activeNavId);
+            const activeSide = document.getElementById(activeSideId);
+            
+            if (activeNav) activeNav.classList.add('active');
+            if (activeSide) activeSide.classList.add('active');
+        }
+
+        // Initialize common functionality
+        function initializeCommon() {
+            loadCameras();
+            setInterval(loadCameras, 10000); // Refresh every 10 seconds
+            
+            // Set active navigation based on current page
+            const pageName = '{{PAGE_NAME}}';
+            setActiveNavigation(pageName);
+            
+            // Show/hide camera selector based on page
+            const cameraSelector = document.getElementById('camera-selector');
+            const showCamera = '{{SHOW_CAMERA_SELECTOR}}' === 'true';
+            if (cameraSelector) {
+                cameraSelector.style.display = showCamera ? 'flex' : 'none';
+            }
+        }
+
+        // Close side menu when clicking outside
+        window.addEventListener('click', function(event) {
+            const menu = document.getElementById('side-menu');
+            const hamburger = document.querySelector('.hamburger');
+            
+            if (!menu.contains(event.target) && !hamburger.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeCommon);
+    </script>
+</body>
+</html>

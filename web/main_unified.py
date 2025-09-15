@@ -279,9 +279,9 @@ def unified_app(request: Request, page: str = "dashboard"):
             
             <!-- Navigation Links -->
             <nav class="nav-links">
-                <a href="/" onclick="showPage('dashboard'); return false;" id="nav-dashboard" class="active">🏠 Dashboard</a>
-                <a href="/setup" onclick="showPage('setup'); return false;" id="nav-setup">🔧 Setup</a>
-                <a href="/settings" onclick="showPage('settings'); return false;" id="nav-settings">⚙️ Settings</a>
+                <a href="#" onclick="showPage('dashboard')" id="nav-dashboard" class="active">🏠 Dashboard</a>
+                <a href="#" onclick="showPage('setup')" id="nav-setup">🔧 Setup</a>
+                <a href="#" onclick="showPage('settings')" id="nav-settings">⚙️ Settings</a>
             </nav>
         </header>
         
@@ -425,117 +425,32 @@ def unified_app(request: Request, page: str = "dashboard"):
                 
                 <div class="card">
                     <h3>Camera Management</h3>
-                    <div class="grid2" style="margin-bottom: 1rem;">
-                        <div>
-                            <h4 class="muted">Camera Selection & Preview</h4>
-                            <label>Active Camera</label>
-                            <select id="settings-cam-select" onchange="onSettingsCameraChange()"></select>
-                            <div style="margin-top: 0.5rem;">
-                                <button onclick="addCamera()">➕ Add Camera</button>
-                                <button onclick="deleteCamera()" style="background: var(--error);">🗑️ Delete Camera</button>
-                            </div>
-                            
-                            <h4 class="muted" style="margin-top: 1rem;">Live Preview</h4>
-                            <div class="img-wrap" style="height: 200px;" onclick="showFullFrame('raw')">
-                                <img id="settings-camera-preview" src="/frames/frame_raw.jpg" />
-                            </div>
-                            <p class="muted" style="font-size: 0.8rem; margin-top: 0.5rem;">
-                                📷 Live feed from selected camera • Click to enlarge
-                            </p>
-                        </div>
-                        <div>
-                            <h4 class="muted">Camera Configuration</h4>
-                            <label>Camera Name</label>
-                            <input type="text" id="camera-name" placeholder="Camera 0">
-                            
-                            <label>Camera ID/Index</label>
-                            <select id="camera-id">
-                                <option value="0">Camera 0 (Default)</option>
-                                <option value="1">Camera 1</option>
-                                <option value="2">Camera 2</option>
-                                <option value="3">Camera 3</option>
-                                <option value="custom">Custom...</option>
-                            </select>
-                            <input type="text" id="camera-id-custom" placeholder="Custom camera ID" style="display: none; margin-top: 0.5rem;">
-                            
-                            <label>Input Mode</label>
-                            <select id="input-mode" onchange="onInputModeChange()">
-                                <option value="CAMERA">Live Camera (USB/Built-in)</option>
-                                <option value="IMAGE">Static Image File</option>
-                                <option value="NETWORK">Network Stream (RTSP/HTTP)</option>
-                                <option value="PICAMERA">Raspberry Pi Camera</option>
-                            </select>
-                            
-                            <label id="input-path-label">Input Path/URL</label>
-                            <div id="input-path-container">
-                                <input type="text" id="input-path" placeholder="/samples/plant.jpg">
-                                <select id="input-path-presets" style="display: none; margin-top: 0.5rem;">
-                                    <option value="">Select preset...</option>
-                                    <option value="/samples/plant.jpg">Sample Plant Image</option>
-                                    <option value="/samples/garden.jpg">Sample Garden Image</option>
-                                    <option value="/dev/video0">USB Camera (Linux)</option>
-                                    <option value="0">Default Camera</option>
-                                </select>
-                            </div>
-                            
-                            <div id="network-stream-options" style="display: none; margin-top: 0.5rem;">
-                                <label>Stream URL Examples:</label>
-                                <select id="stream-examples" onchange="setStreamExample()">
-                                    <option value="">Select example...</option>
-                                    <option value="rtsp://192.168.1.100:554/stream">RTSP Camera</option>
-                                    <option value="http://192.168.1.100:8080/video">HTTP Stream</option>
-                                    <option value="rtsp://admin:password@192.168.1.100/stream1">RTSP with Auth</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label>Select Camera</label>
+                        <select id="settings-cam-select"></select>
+                        <button onclick="addCamera()">➕ Add Camera</button>
+                        <button onclick="deleteCamera()" style="background: var(--error);">🗑️ Delete</button>
                     </div>
                     
-                    <div style="display: flex; gap: 1rem; align-items: center;">
-                        <button onclick="testCamera()" style="background: var(--warning);">🧪 Test Camera</button>
-                        <button onclick="saveCameraSettings()">💾 Save Camera Settings</button>
-                        <span id="camera-test-status" class="muted" style="font-size: 0.9rem;"></span>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3>Advanced Settings</h3>
                     <div class="grid2">
                         <div>
-                            <h4 class="muted">Image Processing</h4>
-                            <label>Image Quality</label>
-                            <select id="image-quality">
-                                <option value="high">High Quality</option>
-                                <option value="medium" selected>Medium Quality</option>
-                                <option value="low">Low Quality (Faster)</option>
-                            </select>
-                            
-                            <label>Frame Rate (FPS)</label>
-                            <select id="frame-rate">
-                                <option value="1">1 FPS</option>
-                                <option value="2" selected>2 FPS</option>
-                                <option value="5">5 FPS</option>
-                                <option value="10">10 FPS</option>
-                            </select>
+                            <label>Camera Name</label>
+                            <input type="text" id="camera-name" placeholder="Camera 0">
+                            <label>Camera ID</label>
+                            <input type="text" id="camera-id" placeholder="0">
                         </div>
                         <div>
-                            <h4 class="muted">Plant Detection</h4>
-                            <label>Sensitivity</label>
-                            <select id="detection-sensitivity">
-                                <option value="low">Low (Less false positives)</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High (More sensitive)</option>
+                            <label>Input Mode</label>
+                            <select id="input-mode">
+                                <option value="IMAGE">Static Image</option>
+                                <option value="CAMERA">Live Camera</option>
+                                <option value="NETWORK">Network Stream</option>
                             </select>
-                            
-                            <label>Minimum Plant Size</label>
-                            <select id="min-plant-size">
-                                <option value="50">Tiny (50px)</option>
-                                <option value="100" selected>Small (100px)</option>
-                                <option value="250">Medium (250px)</option>
-                                <option value="500">Large (500px)</option>
-                            </select>
+                            <label>Input Path/URL</label>
+                            <input type="text" id="input-path" placeholder="/samples/plant.jpg">
                         </div>
                     </div>
-                    <button onclick="saveAdvancedSettings()">💾 Save Advanced Settings</button>
+                    <button onclick="saveCameraSettings()">💾 Save Camera Settings</button>
                 </div>
             </div>
         </main>
@@ -561,9 +476,6 @@ def unified_app(request: Request, page: str = "dashboard"):
 
             // Page navigation
             function showPage(pageName) {
-                // Update URL without reload
-                window.history.pushState({page: pageName}, '', pageName === 'dashboard' ? '/' : '/' + pageName);
-                
                 // Hide all pages
                 document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
                 document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
@@ -577,41 +489,6 @@ def unified_app(request: Request, page: str = "dashboard"):
                     initSetupPage();
                 } else if (pageName === 'settings') {
                     initSettingsPage();
-                }
-            }
-            
-            // Handle browser back/forward buttons
-            window.addEventListener('popstate', function(event) {
-                if (event.state && event.state.page) {
-                    showPageDirect(event.state.page);
-                } else {
-                    // Determine page from URL
-                    const path = window.location.pathname;
-                    const pageName = path === '/' ? 'dashboard' : path.substring(1);
-                    showPageDirect(pageName);
-                }
-            });
-            
-            // Show page without updating history (for popstate)
-            function showPageDirect(pageName) {
-                // Hide all pages
-                document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-                document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-                
-                // Show selected page
-                const pageElement = document.getElementById(pageName + '-page');
-                const navElement = document.getElementById('nav-' + pageName);
-                
-                if (pageElement && navElement) {
-                    pageElement.classList.add('active');
-                    navElement.classList.add('active');
-                    
-                    // Initialize page-specific functionality
-                    if (pageName === 'setup') {
-                        initSetupPage();
-                    } else if (pageName === 'settings') {
-                        initSettingsPage();
-                    }
                 }
             }
 
@@ -814,12 +691,10 @@ def unified_app(request: Request, page: str = "dashboard"):
                 const rawImg = document.getElementById('img-raw');
                 const annImg = document.getElementById('img-ann');
                 const setupImg = document.getElementById('setup-raw-img');
-                const settingsPreview = document.getElementById('settings-camera-preview');
                 
                 if (rawImg) rawImg.src = '/frames/frame_raw.jpg?t=' + t;
                 if (annImg) annImg.src = '/frames/frame_annotated.jpg?t=' + t;
                 if (setupImg) setupImg.src = '/frames/frame_raw.jpg?t=' + t;
-                if (settingsPreview) settingsPreview.src = '/frames/frame_raw.jpg?t=' + t;
             }
 
             // Camera management
@@ -1001,196 +876,6 @@ def unified_app(request: Request, page: str = "dashboard"):
             function initSettingsPage() {
                 loadSettingsData();
                 loadCameras();
-                
-                // Setup camera ID dropdown handler
-                document.getElementById('camera-id').onchange = function() {
-                    const select = document.getElementById('camera-id');
-                    const customInput = document.getElementById('camera-id-custom');
-                    if (select.value === 'custom') {
-                        customInput.style.display = 'block';
-                        customInput.focus();
-                    } else {
-                        customInput.style.display = 'none';
-                    }
-                };
-            }
-            
-            // Handle camera selection change in settings
-            async function onSettingsCameraChange() {
-                const camIndex = parseInt(document.getElementById('settings-cam-select').value || '0');
-                CAM_INDEX = camIndex;
-                
-                // Update the active camera
-                await fetch('/api/set-active-camera', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ index: camIndex })
-                });
-                
-                // Update header camera selector to match
-                const headerCamSelect = document.getElementById('cam-select');
-                if (headerCamSelect) {
-                    headerCamSelect.value = camIndex;
-                }
-                
-                // Refresh camera preview
-                refreshSettingsCameraPreview();
-                
-                // Load camera configuration
-                loadCameraConfiguration(camIndex);
-            }
-            
-            // Handle input mode changes
-            function onInputModeChange() {
-                const inputMode = document.getElementById('input-mode').value;
-                const pathLabel = document.getElementById('input-path-label');
-                const pathInput = document.getElementById('input-path');
-                const pathPresets = document.getElementById('input-path-presets');
-                const networkOptions = document.getElementById('network-stream-options');
-                
-                // Hide all optional elements first
-                pathPresets.style.display = 'none';
-                networkOptions.style.display = 'none';
-                
-                switch(inputMode) {
-                    case 'CAMERA':
-                        pathLabel.textContent = 'Camera Index';
-                        pathInput.placeholder = '0 (for /dev/video0)';
-                        pathPresets.style.display = 'block';
-                        pathPresets.innerHTML = `
-                            <option value="">Select preset...</option>
-                            <option value="0">Default Camera (0)</option>
-                            <option value="1">Secondary Camera (1)</option>
-                            <option value="/dev/video0">USB Camera Linux</option>
-                            <option value="/dev/video1">USB Camera 1 Linux</option>
-                        `;
-                        break;
-                    case 'IMAGE':
-                        pathLabel.textContent = 'Image File Path';
-                        pathInput.placeholder = '/samples/plant.jpg';
-                        pathPresets.style.display = 'block';
-                        pathPresets.innerHTML = `
-                            <option value="">Select preset...</option>
-                            <option value="/samples/plant.jpg">Sample Plant Image</option>
-                            <option value="/samples/garden.jpg">Sample Garden</option>
-                            <option value="/app/data/frame_raw.jpg">Latest Capture</option>
-                        `;
-                        break;
-                    case 'NETWORK':
-                        pathLabel.textContent = 'Stream URL';
-                        pathInput.placeholder = 'rtsp://192.168.1.100:554/stream';
-                        networkOptions.style.display = 'block';
-                        break;
-                    case 'PICAMERA':
-                        pathLabel.textContent = 'Pi Camera Settings';
-                        pathInput.placeholder = '0 (camera index)';
-                        pathPresets.style.display = 'block';
-                        pathPresets.innerHTML = `
-                            <option value="">Select preset...</option>
-                            <option value="0">Pi Camera (Primary)</option>
-                            <option value="1">Pi Camera (Secondary)</option>
-                        `;
-                        break;
-                }
-            }
-            
-            // Set stream example
-            function setStreamExample() {
-                const example = document.getElementById('stream-examples').value;
-                if (example) {
-                    document.getElementById('input-path').value = example;
-                }
-            }
-            
-            // Test camera functionality
-            async function testCamera() {
-                const status = document.getElementById('camera-test-status');
-                const testBtn = document.querySelector('button[onclick="testCamera()"]');
-                
-                status.textContent = '🧪 Testing camera connection...';
-                status.style.color = 'var(--warning)';
-                testBtn.disabled = true;
-                
-                try {
-                    // Get current camera settings
-                    const cameraSettings = {
-                        input_mode: document.getElementById('input-mode').value,
-                        input_path: document.getElementById('input-path').value,
-                        camera_id: document.getElementById('camera-id').value === 'custom' ? 
-                                  document.getElementById('camera-id-custom').value : 
-                                  document.getElementById('camera-id').value
-                    };
-                    
-                    // Send test request
-                    const response = await fetch('/api/test-camera', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cameraSettings)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        status.textContent = '✅ Camera test successful!';
-                        status.style.color = 'var(--success)';
-                        // Refresh preview after successful test
-                        setTimeout(refreshSettingsCameraPreview, 1000);
-                    } else {
-                        status.textContent = '❌ Camera test failed: ' + (result.error || 'Unknown error');
-                        status.style.color = 'var(--error)';
-                    }
-                } catch (e) {
-                    status.textContent = '❌ Test failed: ' + e.message;
-                    status.style.color = 'var(--error)';
-                } finally {
-                    testBtn.disabled = false;
-                    setTimeout(() => {
-                        status.textContent = '';
-                    }, 5000);
-                }
-            }
-            
-            // Refresh camera preview in settings
-            function refreshSettingsCameraPreview() {
-                const preview = document.getElementById('settings-camera-preview');
-                if (preview) {
-                    preview.src = '/frames/frame_raw.jpg?t=' + Date.now();
-                }
-            }
-            
-            // Load camera configuration
-            async function loadCameraConfiguration(cameraIndex) {
-                try {
-                    const response = await fetch('/api/config');
-                    const config = await response.json();
-                    const cameras = config.cameras || [];
-                    
-                    if (cameras[cameraIndex]) {
-                        const camera = cameras[cameraIndex];
-                        document.getElementById('camera-name').value = camera.name || `Camera ${cameraIndex}`;
-                        document.getElementById('input-mode').value = camera.input_mode || 'CAMERA';
-                        document.getElementById('input-path').value = camera.input_path || '0';
-                        
-                        // Set camera ID
-                        const cameraId = camera.camera_id || cameraIndex.toString();
-                        const cameraIdSelect = document.getElementById('camera-id');
-                        const customInput = document.getElementById('camera-id-custom');
-                        
-                        if (['0', '1', '2', '3'].includes(cameraId)) {
-                            cameraIdSelect.value = cameraId;
-                            customInput.style.display = 'none';
-                        } else {
-                            cameraIdSelect.value = 'custom';
-                            customInput.value = cameraId;
-                            customInput.style.display = 'block';
-                        }
-                        
-                        // Update input mode dependent fields
-                        onInputModeChange();
-                    }
-                } catch (e) {
-                    console.error('Failed to load camera configuration:', e);
-                }
             }
 
             async function loadSettingsData() {
@@ -1233,151 +918,6 @@ def unified_app(request: Request, page: str = "dashboard"):
                 }
             }
 
-            async function saveCameraSettings() {
-                try {
-                    const cameraIndex = parseInt(document.getElementById('settings-cam-select').value || '0');
-                    const cameraId = document.getElementById('camera-id').value === 'custom' ? 
-                                    document.getElementById('camera-id-custom').value : 
-                                    document.getElementById('camera-id').value;
-                    
-                    const cameraSettings = {
-                        index: cameraIndex,
-                        name: document.getElementById('camera-name').value,
-                        camera_id: cameraId,
-                        input_mode: document.getElementById('input-mode').value,
-                        input_path: document.getElementById('input-path').value
-                    };
-                    
-                    const response = await fetch('/api/camera-config', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cameraSettings)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.ok) {
-                        alert('Camera settings saved successfully!');
-                        
-                        // Update the active camera if this is the current one
-                        if (cameraIndex === CAM_INDEX) {
-                            await fetch('/api/set-active-camera', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ index: cameraIndex })
-                            });
-                            
-                            // Refresh all camera feeds
-                            refreshImages();
-                            refreshSettingsCameraPreview();
-                        }
-                        
-                        // Reload camera list
-                        await loadCameras();
-                    } else {
-                        alert('Failed to save camera settings: ' + (result.error || 'Unknown error'));
-                    }
-                } catch (e) {
-                    alert('Failed to save camera settings: ' + e.message);
-                }
-            }
-            
-            async function saveAdvancedSettings() {
-                try {
-                    const advancedSettings = {
-                        image_quality: document.getElementById('image-quality').value,
-                        frame_rate: parseInt(document.getElementById('frame-rate').value),
-                        detection_sensitivity: document.getElementById('detection-sensitivity').value,
-                        min_plant_size: parseInt(document.getElementById('min-plant-size').value)
-                    };
-                    
-                    const response = await fetch('/api/advanced-config', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(advancedSettings)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.ok) {
-                        alert('Advanced settings saved successfully!');
-                    } else {
-                        alert('Failed to save advanced settings: ' + (result.error || 'Unknown error'));
-                    }
-                } catch (e) {
-                    alert('Failed to save advanced settings: ' + e.message);
-                }
-            }
-            
-            async function addCamera() {
-                const name = prompt('Enter camera name:', 'New Camera');
-                if (!name) return;
-                
-                try {
-                    const response = await fetch('/api/add-camera', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            name: name,
-                            input_mode: 'CAMERA',
-                            input_path: '0',
-                            camera_id: '0'
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.ok) {
-                        await loadCameras();
-                        // Select the newly added camera
-                        const select = document.getElementById('settings-cam-select');
-                        select.value = result.camera_index;
-                        await onSettingsCameraChange();
-                        alert('Camera added successfully!');
-                    } else {
-                        alert('Failed to add camera: ' + (result.error || 'Unknown error'));
-                    }
-                } catch (e) {
-                    alert('Failed to add camera: ' + e.message);
-                }
-            }
-            
-            async function deleteCamera() {
-                const cameraIndex = parseInt(document.getElementById('settings-cam-select').value || '0');
-                
-                if (cameraIndex === 0) {
-                    alert('Cannot delete the default camera.');
-                    return;
-                }
-                
-                if (!confirm('Are you sure you want to delete this camera? This action cannot be undone.')) {
-                    return;
-                }
-                
-                try {
-                    const response = await fetch('/api/delete-camera', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ index: cameraIndex })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.ok) {
-                        await loadCameras();
-                        // Reset to default camera
-                        const select = document.getElementById('settings-cam-select');
-                        select.value = 0;
-                        await onSettingsCameraChange();
-                        alert('Camera deleted successfully!');
-                    } else {
-                        alert('Failed to delete camera: ' + (result.error || 'Unknown error'));
-                    }
-                } catch (e) {
-                    alert('Failed to delete camera: ' + e.message);
-                }
-            }
-
             // Modal event handlers
             window.onclick = function(event) {
                 const modal = document.getElementById('detailModal');
@@ -1391,19 +931,6 @@ def unified_app(request: Request, page: str = "dashboard"):
 
             // Initialize application
             document.addEventListener('DOMContentLoaded', function() {
-                // Set initial page based on URL
-                const path = window.location.pathname;
-                const initialPage = path === '/' ? 'dashboard' : path.substring(1);
-                
-                // Validate the page exists, default to dashboard if not
-                const validPages = ['dashboard', 'setup', 'settings'];
-                const pageName = validPages.includes(initialPage) ? initialPage : 'dashboard';
-                
-                // Show the correct initial page
-                if (pageName !== 'dashboard') {
-                    showPageDirect(pageName);
-                }
-                
                 loadCameras();
                 refreshTelemetry();
                 refreshImages();
@@ -1531,159 +1058,3 @@ async def api_plant_class(payload: Dict[str, Any]):
         return JSONResponse(content={"ok": True, "overrides": overrides})
     except Exception as e:
         return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/camera-config")
-async def api_camera_config(payload: Dict[str, Any]):
-    """Save camera configuration"""
-    try:
-        camera_index = int(payload.get('index', 0))
-        
-        # Load current config
-        config = {}
-        if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-                config = pyjson.load(f)
-        
-        # Initialize cameras list if not exists
-        if 'cameras' not in config:
-            config['cameras'] = []
-        
-        # Ensure the cameras list is long enough
-        while len(config['cameras']) <= camera_index:
-            config['cameras'].append({})
-        
-        # Update camera settings
-        config['cameras'][camera_index] = {
-            'name': payload.get('name', f'Camera {camera_index}'),
-            'camera_id': payload.get('camera_id', str(camera_index)),
-            'input_mode': payload.get('input_mode', 'CAMERA'),
-            'input_path': payload.get('input_path', '0')
-        }
-        
-        # Save config
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-            pyjson.dump(config, f, indent=2)
-        
-        return JSONResponse(content={"ok": True, "camera_index": camera_index})
-    except Exception as e:
-        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/advanced-config")
-async def api_advanced_config(payload: Dict[str, Any]):
-    """Save advanced processing settings"""
-    try:
-        # Load current config
-        config = {}
-        if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-                config = pyjson.load(f)
-        
-        # Initialize advanced settings if not exists
-        if 'advanced' not in config:
-            config['advanced'] = {}
-        
-        # Update advanced settings
-        config['advanced'].update({
-            'image_quality': payload.get('image_quality', 'medium'),
-            'frame_rate': int(payload.get('frame_rate', 2)),
-            'detection_sensitivity': payload.get('detection_sensitivity', 'medium'),
-            'min_plant_size': int(payload.get('min_plant_size', 100))
-        })
-        
-        # Save config
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-            pyjson.dump(config, f, indent=2)
-        
-        return JSONResponse(content={"ok": True})
-    except Exception as e:
-        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/add-camera")
-async def api_add_camera(payload: Dict[str, Any]):
-    """Add a new camera"""
-    try:
-        # Load current config
-        config = {}
-        if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-                config = pyjson.load(f)
-        
-        # Initialize cameras list if not exists
-        if 'cameras' not in config:
-            config['cameras'] = []
-        
-        # Add new camera
-        new_camera = {
-            'name': payload.get('name', f'Camera {len(config["cameras"])}'),
-            'camera_id': payload.get('camera_id', str(len(config['cameras']))),
-            'input_mode': payload.get('input_mode', 'CAMERA'),
-            'input_path': payload.get('input_path', '0')
-        }
-        
-        config['cameras'].append(new_camera)
-        camera_index = len(config['cameras']) - 1
-        
-        # Save config
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-            pyjson.dump(config, f, indent=2)
-        
-        return JSONResponse(content={"ok": True, "camera_index": camera_index})
-    except Exception as e:
-        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/delete-camera")
-async def api_delete_camera(payload: Dict[str, Any]):
-    """Delete a camera"""
-    try:
-        camera_index = int(payload.get('index', 0))
-        
-        if camera_index == 0:
-            return JSONResponse(content={"ok": False, "error": "Cannot delete default camera"}, status_code=400)
-        
-        # Load current config
-        config = {}
-        if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-                config = pyjson.load(f)
-        
-        # Remove camera if exists
-        if 'cameras' in config and len(config['cameras']) > camera_index:
-            config['cameras'].pop(camera_index)
-            
-            # Reset active camera if it was the deleted one
-            if config.get('active_camera_index', 0) >= camera_index:
-                config['active_camera_index'] = 0
-            
-            # Save config
-            os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-            with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-                pyjson.dump(config, f, indent=2)
-        
-        return JSONResponse(content={"ok": True})
-    except Exception as e:
-        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/test-camera")
-async def api_test_camera(payload: Dict[str, Any]):
-    """Test camera connection and settings"""
-    try:
-        # For now, simulate a camera test
-        # In a real implementation, this would try to connect to the camera
-        input_mode = payload.get('input_mode', 'CAMERA')
-        input_path = payload.get('input_path', '0')
-        
-        # Basic validation
-        if input_mode == 'NETWORK' and not input_path.startswith(('rtsp://', 'http://', 'https://')):
-            return JSONResponse(content={"success": False, "error": "Network streams must use rtsp:// or http:// URLs"})
-        
-        if input_mode == 'IMAGE' and not os.path.exists(input_path.replace('/app', '.')):
-            return JSONResponse(content={"success": False, "error": f"Image file not found: {input_path}"})
-        
-        # Simulate success for demo
-        return JSONResponse(content={"success": True, "message": "Camera test successful"})
-        
-    except Exception as e:
-        return JSONResponse(content={"success": False, "error": str(e)})
