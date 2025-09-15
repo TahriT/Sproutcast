@@ -44,6 +44,8 @@ struct PlantInstance {
     int branchCount = 0;
     int tipCount = 0;
     double stemLengthCm = 0.0;
+    double pathLengthCm = 0.0;
+    double longestPathCm = 0.0;
     double solidity = 0.0;
     double eccentricity = 0.0;
     double circularity = 0.0;

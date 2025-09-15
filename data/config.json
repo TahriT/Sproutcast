@@ -37,18 +37,27 @@
       }
     },
     {
-      "name": "Camera 1",
-      "camera_id": "1",
-      "plant_id": "plant-1",
-      "room": "room-1",
-      "area": "area-1",
+      "name": "Camera 0",
+      "camera_id": "0",
       "input_mode": "IMAGE",
-      "input_path": "/samples/plant.jpg",
-      "input_url": ""
+      "input_path": "/samples/plant.jpg"
     }
   ],
-  "active_camera_index": 1,
+  "active_camera_index": 0,
   "camera_id": "",
   "scale_px_per_cm": null,
-  "threshold": null
+  "threshold": null,
+  "advanced": {
+    "image_quality": "medium",
+    "frame_rate": 2,
+    "detection_sensitivity": "medium",
+    "min_plant_size": 250
+  },
+  "vision": {
+    "annotation_view": "health",
+    "show_annotations": true,
+    "annotation_style": "full",
+    "debug_mode": false,
+    "debug_output_path": "/app/data/debug"
+  }
 }

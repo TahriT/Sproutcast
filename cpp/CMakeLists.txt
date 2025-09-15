@@ -22,6 +22,7 @@ add_executable(plantvision_cpp
     src/mqtt_client.cpp 
     src/leaf_area.cpp
     src/vision_processor.cpp
+    src/morphology_analysis.cpp
 )
 
 target_include_directories(plantvision_cpp PRIVATE 

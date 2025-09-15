@@ -1,4 +1,5 @@
 #include "leaf_area.hpp"
+#include "morphology_analysis.hpp"
 #include <opencv2/opencv.hpp>
 #include <map>
 #include <chrono>
@@ -6,6 +7,8 @@
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+
+using namespace PlantVision::Morphology;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -465,7 +468,7 @@ PlantInstance processSprout(const cv::Mat &frame, const cv::Rect &bbox, const st
     instance.heightCm = (scalePxPerCm > 0.0) ? (bbox.height / scalePxPerCm) : 0.0;
     instance.widthCm = (scalePxPerCm > 0.0) ? (bbox.width / scalePxPerCm) : 0.0;
     
-    // Sprout-specific analysis
+    // Sprout-specific analysis with enhanced morphology
     cv::Rect roi = bbox & cv::Rect(0, 0, frame.cols, frame.rows);
     if (roi.width > 0 && roi.height > 0) {
         cv::Mat roiFrame = frame(roi);
@@ -477,28 +480,46 @@ PlantInstance processSprout(const cv::Mat &frame, const cv::Rect &bbox, const st
         cv::meanStdDev(roiFrame, mean, stddev);
         instance.stdColor = cv::Scalar(stddev.at<double>(0), stddev.at<double>(1), stddev.at<double>(2));
 
-        // Basic morphological analysis for sprouts
+        // Create binary mask for morphological analysis
         cv::Mat binaryMask;
         cv::cvtColor(roiFrame, binaryMask, cv::COLOR_BGR2GRAY);
         cv::threshold(binaryMask, binaryMask, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
         
-        // Shape descriptors
-        instance.solidity = calculateSolidity(contour);
-        if (contour.size() >= 5) {
-            cv::RotatedRect ellipse = cv::fitEllipse(contour);
-            instance.eccentricity = calculateEccentricity(ellipse);
-        }
-        double perimeter = cv::arcLength(contour, true);
-        instance.circularity = calculateCircularity(instance.areaPixels, perimeter);
-        instance.compactness = calculateCompactness(instance.areaPixels, perimeter);
-        instance.perimeterCm = (scalePxPerCm > 0.0) ? (perimeter / scalePxPerCm) : 0.0;
+        // ========== ENHANCED MORPHOLOGICAL ANALYSIS (PlantCV-INSPIRED) ==========
+        MorphologyAnalyzer analyzer;
+        MorphologyMetrics morphology = analyzer.analyzeMorphology(binaryMask, roiFrame);
         
-        // Advanced shape descriptors
-        instance.aspectRatio = calculateAspectRatio(bbox);
-        instance.extent = calculateExtent(instance.areaPixels, bbox);
-        instance.orientation = calculateOrientation(contour);
+        // Transfer morphological metrics to instance
+        instance.solidity = morphology.solidity;
+        instance.eccentricity = morphology.eccentricity;
+        instance.circularity = morphology.circularity;
+        instance.compactness = morphology.compactness;
+        instance.aspectRatio = morphology.aspect_ratio;
+        instance.extent = morphology.extent;
+        instance.perimeterCm = (scalePxPerCm > 0.0) ? (morphology.perimeter / scalePxPerCm) : 0.0;
+        
+        // Skeleton analysis results
+        instance.branchCount = morphology.branch_points;
+        instance.tipCount = morphology.tip_points;
+        instance.pathLengthCm = (scalePxPerCm > 0.0) ? (morphology.total_path_length / scalePxPerCm) : 0.0;
+        instance.longestPathCm = (scalePxPerCm > 0.0) ? (morphology.longest_path / scalePxPerCm) : 0.0;
+        
+        // Calculate centroid
+        if (morphology.centroid.x > 0 && morphology.centroid.y > 0) {
+            instance.centroid = cv::Point2f(morphology.centroid.x + roi.x, morphology.centroid.y + roi.y);
+        } else {
+            instance.centroid = calculateCentroid(contour);
+        }
+        
+        // Calculate orientation from morphology
+        if (morphology.min_area_rect.size.width > 0) {
+            instance.orientation = morphology.min_area_rect.angle;
+        } else {
+            instance.orientation = calculateOrientation(contour);
+        }
+        
+        // Calculate convexity
         instance.convexity = calculateConvexity(contour);
-        instance.centroid = calculateCentroid(contour);
         
         // Enhanced color analysis
         instance.ndvi = calculateNDVI(roiFrame, binaryMask);
@@ -537,7 +558,7 @@ PlantInstance processPlant(const cv::Mat &frame, const cv::Rect &bbox, const std
     instance.heightCm = (scalePxPerCm > 0.0) ? (bbox.height / scalePxPerCm) : 0.0;
     instance.widthCm = (scalePxPerCm > 0.0) ? (bbox.width / scalePxPerCm) : 0.0;
     
-    // Plant-specific analysis
+    // Plant-specific analysis with comprehensive PlantCV-inspired morphology
     cv::Rect roi = bbox & cv::Rect(0, 0, frame.cols, frame.rows);
     if (roi.width > 0 && roi.height > 0) {
         cv::Mat roiFrame = frame(roi);
@@ -549,38 +570,49 @@ PlantInstance processPlant(const cv::Mat &frame, const cv::Rect &bbox, const std
         cv::meanStdDev(roiFrame, mean, stddev);
         instance.stdColor = cv::Scalar(stddev.at<double>(0), stddev.at<double>(1), stddev.at<double>(2));
 
-        // ========== ENHANCED MORPHOLOGICAL ANALYSIS ==========
+        // Create binary mask for morphological analysis
         cv::Mat binaryMask;
         cv::cvtColor(roiFrame, binaryMask, cv::COLOR_BGR2GRAY);
         cv::threshold(binaryMask, binaryMask, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
         
-        // Skeleton analysis for branch/tip detection
-        cv::Mat skeleton = skeletonize(binaryMask);
-        instance.branchPoints = findBranchPoints(skeleton);
-        instance.tipPoints = findTipPoints(skeleton);
-        instance.branchCount = static_cast<int>(instance.branchPoints.size());
-        instance.tipCount = static_cast<int>(instance.tipPoints.size());
+        // ========== COMPREHENSIVE MORPHOLOGICAL ANALYSIS (PlantCV-INSPIRED) ==========
+        MorphologyAnalyzer analyzer;
+        MorphologyMetrics morphology = analyzer.analyzeMorphology(binaryMask, roiFrame);
         
-        // Shape descriptors
-        instance.solidity = calculateSolidity(contour);
-        if (contour.size() >= 5) {
-            cv::RotatedRect ellipse = cv::fitEllipse(contour);
-            instance.eccentricity = calculateEccentricity(ellipse);
+        // Transfer morphological metrics to instance
+        instance.solidity = morphology.solidity;
+        instance.eccentricity = morphology.eccentricity;
+        instance.circularity = morphology.circularity;
+        instance.compactness = morphology.compactness;
+        instance.aspectRatio = morphology.aspect_ratio;
+        instance.extent = morphology.extent;
+        instance.perimeterCm = (scalePxPerCm > 0.0) ? (morphology.perimeter / scalePxPerCm) : 0.0;
+        
+        // Skeleton analysis results for plant architecture
+        instance.branchCount = morphology.branch_points;
+        instance.tipCount = morphology.tip_points;
+        instance.pathLengthCm = (scalePxPerCm > 0.0) ? (morphology.total_path_length / scalePxPerCm) : 0.0;
+        instance.longestPathCm = (scalePxPerCm > 0.0) ? (morphology.longest_path / scalePxPerCm) : 0.0;
+        
+        // Use skeleton analysis for stem length estimation
+        instance.stemLengthCm = instance.longestPathCm;
+        
+        // Calculate centroid from morphology
+        if (morphology.centroid.x > 0 && morphology.centroid.y > 0) {
+            instance.centroid = cv::Point2f(morphology.centroid.x + roi.x, morphology.centroid.y + roi.y);
+        } else {
+            instance.centroid = calculateCentroid(contour);
         }
-        double perimeter = cv::arcLength(contour, true);
-        instance.circularity = calculateCircularity(instance.areaPixels, perimeter);
-        instance.compactness = calculateCompactness(instance.areaPixels, perimeter);
-        instance.perimeterCm = (scalePxPerCm > 0.0) ? (perimeter / scalePxPerCm) : 0.0;
         
-        // Advanced shape descriptors
-        instance.aspectRatio = calculateAspectRatio(bbox);
-        instance.extent = calculateExtent(instance.areaPixels, bbox);
-        instance.orientation = calculateOrientation(contour);
+        // Calculate orientation from morphology
+        if (morphology.min_area_rect.size.width > 0) {
+            instance.orientation = morphology.min_area_rect.angle;
+        } else {
+            instance.orientation = calculateOrientation(contour);
+        }
+        
+        // Calculate convexity
         instance.convexity = calculateConvexity(contour);
-        instance.centroid = calculateCentroid(contour);
-        
-        double longestPath = calculateLongestPath(skeleton);
-        instance.stemLengthCm = (scalePxPerCm > 0.0) ? (longestPath / scalePxPerCm) : 0.0;
         
         // Enhanced color analysis with vegetation indices
         instance.ndvi = calculateNDVI(roiFrame, binaryMask);

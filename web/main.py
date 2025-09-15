@@ -311,15 +311,43 @@ def unified_app(request: Request, page: str = "dashboard"):
                 <!-- Live Feed -->
                 <div class="grid2">
                     <div class="card">
-                        <h3 class="muted">Raw Camera Feed</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 class="muted">Raw Camera Feed</h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem;">
+                                    <span>Debug Mode</span>
+                                    <div class="toggle" style="width: 40px; height: 20px;">
+                                        <input type="checkbox" id="debug-mode-toggle">
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
                         <div class="img-wrap" onclick="showFullFrame('raw')">
                             <img id="img-raw" src="/frames/frame_raw.jpg" />
                         </div>
                     </div>
                     <div class="card">
-                        <h3 class="muted">Analysis View</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 class="muted">Analysis View</h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem;">
+                                    <span>OpenCV Annotations</span>
+                                    <div class="toggle" style="width: 40px; height: 20px;">
+                                        <input type="checkbox" id="opencv-annotations-toggle" checked>
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
                         <div class="img-wrap" onclick="showFullFrame('annotated')">
                             <img id="img-ann" src="/frames/frame_annotated.jpg" />
+                        </div>
+                        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: center;">
+                            <button onclick="showAnnotationView('contours')" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">🔍 Contours</button>
+                            <button onclick="showAnnotationView('skeleton')" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">🦴 Skeleton</button>
+                            <button onclick="showAnnotationView('morphology')" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">📐 Morphology</button>
+                            <button onclick="showAnnotationView('health')" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">❤️ Health</button>
                         </div>
                     </div>
                 </div>
@@ -396,6 +424,35 @@ def unified_app(request: Request, page: str = "dashboard"):
                     <div style="margin-top:1rem;">
                         <button onclick="saveAnalysis()" id="save-btn">💾 Save Analysis</button>
                         <button onclick="resetAnalysis()" id="reset-btn">🔄 Reset</button>
+                        <div style="margin-left: 1rem; display: inline-block;">
+                            <label style="display: flex; align-items: center; gap: 0.25rem;">
+                                <input type="checkbox" id="override-existing" checked>
+                                <span>Override existing plants</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Configuration Management</h3>
+                    <div class="grid2">
+                        <div>
+                            <h4 class="muted">Export Configuration</h4>
+                            <p>Export current plant configuration and settings</p>
+                            <button onclick="exportConfig()">📤 Export Config</button>
+                        </div>
+                        <div>
+                            <h4 class="muted">Import Configuration</h4>
+                            <p>Import plant configuration from a file</p>
+                            <input type="file" id="config-file-input" accept=".json" style="margin-bottom: 0.5rem;">
+                            <button onclick="importConfig()">📥 Import Config</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <h4 class="muted">Size Calibration</h4>
+                        <label>Scale (pixels per cm)</label>
+                        <input type="number" id="scale-px-per-cm" step="0.1" min="0.1" placeholder="10.5" style="margin-right: 0.5rem;">
+                        <button onclick="updateScale()">🔧 Update Scale</button>
                     </div>
                 </div>
             </div>
@@ -627,6 +684,58 @@ def unified_app(request: Request, page: str = "dashboard"):
             function toggleUnknownPlants() {
                 showUnknownPlants = document.getElementById('show-unknown').checked;
                 updatePlantGalleries();
+            }
+            
+            // Debug mode toggle
+            function toggleDebugMode() {
+                const debugMode = document.getElementById('debug-mode-toggle').checked;
+                
+                fetch('/api/debug-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: debugMode })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.ok) {
+                          console.log('Debug mode:', debugMode ? 'enabled' : 'disabled');
+                          refreshImages(); // Refresh to get debug images if enabled
+                      }
+                  })
+                  .catch(error => console.error('Debug mode toggle failed:', error));
+            }
+            
+            // OpenCV annotations toggle
+            function toggleOpenCVAnnotations() {
+                const showAnnotations = document.getElementById('opencv-annotations-toggle').checked;
+                
+                fetch('/api/opencv-annotations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: showAnnotations })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.ok) {
+                          console.log('OpenCV annotations:', showAnnotations ? 'enabled' : 'disabled');
+                          refreshImages(); // Refresh to update annotations
+                      }
+                  })
+                  .catch(error => console.error('Annotation toggle failed:', error));
+            }
+            
+            // Show specific annotation view
+            function showAnnotationView(viewType) {
+                fetch('/api/annotation-view', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ view: viewType })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.ok) {
+                          console.log('Annotation view changed to:', viewType);
+                          refreshImages(); // Refresh to show new view
+                      }
+                  })
+                  .catch(error => console.error('Annotation view change failed:', error));
             }
 
             // Plant card creation
@@ -971,6 +1080,16 @@ def unified_app(request: Request, page: str = "dashboard"):
 
             async function saveAnalysis() {
                 try {
+                    const overrideExisting = document.getElementById('override-existing').checked;
+                    
+                    // If overriding, clear existing plants first
+                    if (overrideExisting) {
+                        await fetch('/api/clear-plants', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
                     for (const [index, plant] of currentAnalysisResults.entries()) {
                         await fetch('/api/plant-class', {
                             method: 'POST',
@@ -980,12 +1099,88 @@ def unified_app(request: Request, page: str = "dashboard"):
                     }
                     
                     const statusDiv = document.getElementById('analysis-status');
-                    statusDiv.textContent = 'Analysis saved successfully!';
+                    statusDiv.textContent = overrideExisting ? 
+                        'Analysis saved! Previous plants were overridden.' : 
+                        'Analysis saved successfully!';
                     statusDiv.style.background = '#0f4c3a';
                 } catch (e) {
                     const statusDiv = document.getElementById('analysis-status');
                     statusDiv.textContent = 'Failed to save analysis: ' + e.message;
                     statusDiv.style.background = '#4c1d1d';
+                }
+            }
+            
+            // Configuration management functions
+            async function exportConfig() {
+                try {
+                    const response = await fetch('/api/config');
+                    const config = await response.json();
+                    
+                    const dataStr = JSON.stringify(config, null, 2);
+                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                    
+                    const exportFileDefaultName = 'plantvision-config-' + new Date().toISOString().split('T')[0] + '.json';
+                    
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', exportFileDefaultName);
+                    linkElement.click();
+                } catch (e) {
+                    alert('Failed to export configuration: ' + e.message);
+                }
+            }
+            
+            async function importConfig() {
+                const fileInput = document.getElementById('config-file-input');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    alert('Please select a configuration file first.');
+                    return;
+                }
+                
+                try {
+                    const text = await file.text();
+                    const config = JSON.parse(text);
+                    
+                    const response = await fetch('/api/config', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(config)
+                    });
+                    
+                    if (response.ok) {
+                        alert('Configuration imported successfully! Please restart the system for changes to take effect.');
+                    } else {
+                        throw new Error('Failed to import configuration');
+                    }
+                } catch (e) {
+                    alert('Failed to import configuration: ' + e.message);
+                }
+            }
+            
+            async function updateScale() {
+                const scale = parseFloat(document.getElementById('scale-px-per-cm').value);
+                
+                if (!scale || scale <= 0) {
+                    alert('Please enter a valid scale value (pixels per cm)');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/scale', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scale_px_per_cm: scale })
+                    });
+                    
+                    if (response.ok) {
+                        alert(`Scale updated to ${scale} pixels per cm`);
+                    } else {
+                        throw new Error('Failed to update scale');
+                    }
+                } catch (e) {
+                    alert('Failed to update scale: ' + e.message);
                 }
             }
 
@@ -1386,8 +1581,10 @@ def unified_app(request: Request, page: str = "dashboard"):
                 }
             }
 
-            // Toggle event handler
+            // Toggle event handlers
             document.getElementById('show-unknown').onchange = toggleUnknownPlants;
+            document.getElementById('debug-mode-toggle').onchange = toggleDebugMode;
+            document.getElementById('opencv-annotations-toggle').onchange = toggleOpenCVAnnotations;
 
             // Initialize application
             document.addEventListener('DOMContentLoaded', function() {
@@ -1402,6 +1599,17 @@ def unified_app(request: Request, page: str = "dashboard"):
                 // Show the correct initial page
                 if (pageName !== 'dashboard') {
                     showPageDirect(pageName);
+                }
+                
+                // Set up debug toggle event listeners
+                const debugToggle = document.getElementById('debug-mode-toggle');
+                if (debugToggle) {
+                    debugToggle.addEventListener('change', toggleDebugMode);
+                }
+                
+                const annotationToggle = document.getElementById('opencv-annotations-toggle');
+                if (annotationToggle) {
+                    annotationToggle.addEventListener('change', toggleOpenCVAnnotations);
                 }
                 
                 loadCameras();
@@ -1687,3 +1895,201 @@ async def api_test_camera(payload: Dict[str, Any]):
         
     except Exception as e:
         return JSONResponse(content={"success": False, "error": str(e)})
+
+@app.post("/api/debug-mode")
+async def api_debug_mode(payload: Dict[str, Any]):
+    """Toggle debug mode for vision processing"""
+    try:
+        debug_enabled = payload.get('enabled', False)
+        
+        # Save debug mode setting to config
+        config = {}
+        if os.path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                config = pyjson.load(f)
+        
+        if 'vision' not in config:
+            config['vision'] = {}
+        
+        config['vision']['debug_mode'] = debug_enabled
+        config['vision']['debug_output_path'] = '/app/data/debug'
+        
+        # Save config
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            pyjson.dump(config, f, indent=2)
+        
+        return JSONResponse(content={"ok": True, "debug_mode": debug_enabled})
+        
+    except Exception as e:
+        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
+
+@app.post("/api/opencv-annotations")
+async def api_opencv_annotations(payload: Dict[str, Any]):
+    """Toggle OpenCV annotations display"""
+    try:
+        annotations_enabled = payload.get('enabled', True)
+        
+        # Save annotation setting to config
+        config = {}
+        if os.path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                config = pyjson.load(f)
+        
+        if 'vision' not in config:
+            config['vision'] = {}
+        
+        config['vision']['show_annotations'] = annotations_enabled
+        config['vision']['annotation_style'] = 'full'
+        
+        # Save config
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            pyjson.dump(config, f, indent=2)
+        
+        return JSONResponse(content={"ok": True, "annotations_enabled": annotations_enabled})
+        
+    except Exception as e:
+        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
+
+@app.post("/api/annotation-view")
+async def api_annotation_view(payload: Dict[str, Any]):
+    """Set specific annotation view type"""
+    try:
+        view_type = payload.get('view', 'full')
+        valid_views = ['contours', 'skeleton', 'morphology', 'health', 'full']
+        
+        if view_type not in valid_views:
+            return JSONResponse(content={"ok": False, "error": f"Invalid view type. Must be one of: {valid_views}"}, status_code=400)
+        
+        # Save view setting to config
+        config = {}
+        if os.path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                config = pyjson.load(f)
+        
+        if 'vision' not in config:
+            config['vision'] = {}
+        
+        config['vision']['annotation_view'] = view_type
+        
+        # Save config
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            pyjson.dump(config, f, indent=2)
+        
+        return JSONResponse(content={"ok": True, "annotation_view": view_type})
+        
+    except Exception as e:
+        return JSONResponse(content={"ok": False, "error": str(e)}, status_code=500)
+
+@app.get("/api/vision-debug")
+def api_vision_debug():
+    """Get vision processing debug information"""
+    try:
+        debug_info = {
+            "morphology_analysis": {},
+            "contour_analysis": {},
+            "skeleton_analysis": {},
+            "health_analysis": {}
+        }
+        
+        # Try to read debug information from files
+        debug_files = [
+            ("/app/data/debug/metrics.log", "processing_metrics"),
+            ("/app/data/debug/contour_debug.json", "contour_debug"),
+            ("/app/data/debug/morphology_debug.json", "morphology_debug")
+        ]
+        
+        for debug_file, key in debug_files:
+            try:
+                if os.path.exists(debug_file):
+                    if debug_file.endswith('.log'):
+                        with open(debug_file, 'r') as f:
+                            debug_info[key] = f.readlines()[-10:]  # Last 10 lines
+                    else:
+                        with open(debug_file, 'r') as f:
+                            debug_info[key] = pyjson.load(f)
+            except Exception:
+                debug_info[key] = "Debug file not accessible"
+        
+        return JSONResponse(content=debug_info)
+        
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.get("/api/config")
+async def get_config():
+    """Get the current configuration"""
+    try:
+        config_path = "/app/data/config.json"
+        with open(config_path, 'r') as f:
+            config = pyjson.load(f)
+        return JSONResponse(content=config)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.put("/api/config")
+async def update_config(request: Request):
+    """Update the configuration file"""
+    try:
+        config = await request.json()
+        config_path = "/app/data/config.json"
+        
+        # Backup existing config
+        if os.path.exists(config_path):
+            import time
+            import shutil
+            backup_path = f"{config_path}.backup.{int(time.time())}"
+            shutil.copy2(config_path, backup_path)
+        
+        with open(config_path, 'w') as f:
+            pyjson.dump(config, f, indent=2)
+        
+        return JSONResponse(content={"status": "Configuration updated successfully"})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.post("/api/scale")
+async def update_scale(request: Request):
+    """Update the scale parameter in configuration"""
+    try:
+        data = await request.json()
+        scale = data.get('scale_px_per_cm')
+        
+        if not scale or scale <= 0:
+            return JSONResponse(content={"error": "Invalid scale value"}, status_code=400)
+        
+        config_path = "/app/data/config.json"
+        with open(config_path, 'r') as f:
+            config = pyjson.load(f)
+        
+        config['scale_px_per_cm'] = scale
+        
+        with open(config_path, 'w') as f:
+            pyjson.dump(config, f, indent=2)
+        
+        return JSONResponse(content={"status": f"Scale updated to {scale} pixels per cm"})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.post("/api/clear-plants")
+async def clear_plants():
+    """Clear all existing plant data"""
+    try:
+        data_dir = "/app/data"
+        cleared_files = []
+        
+        # Remove plant JSON files and images
+        for file in os.listdir(data_dir):
+            if file.startswith('plant_') and (file.endswith('.json') or file.endswith('.jpg') or file.endswith('.png')):
+                file_path = os.path.join(data_dir, file)
+                os.remove(file_path)
+                cleared_files.append(file)
+        
+        return JSONResponse(content={
+            "status": "Plant data cleared successfully", 
+            "cleared_files": cleared_files
+        })
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)

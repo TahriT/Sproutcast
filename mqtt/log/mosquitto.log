@@ -629,3 +629,29 @@
 1757919479: New client connected from 172.18.0.5:60276 as sproutcast-client (p2, c1, k60).
 1757919479: New connection from 172.18.0.4:51707 on port 1883.
 1757919479: New client connected from 172.18.0.4:51707 as auto-DE97A392-15D3-7226-7E64-EFDFBF3CF7F7 (p2, c1, k60).
+1757919759: Client auto-DE97A392-15D3-7226-7E64-EFDFBF3CF7F7 closed its connection.
+1757919769: Client sproutcast-client closed its connection.
+1757919770: New connection from 172.18.0.4:55926 on port 1883.
+1757919770: New client connected from 172.18.0.4:55926 as sproutcast-client (p2, c1, k60).
+1757919771: New connection from 172.18.0.5:35951 on port 1883.
+1757919771: New client connected from 172.18.0.5:35951 as auto-CD34016E-6E0E-3A0A-EECD-3A968C2CD151 (p2, c1, k60).
+1757920747: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1757921344: Client auto-CD34016E-6E0E-3A0A-EECD-3A968C2CD151 closed its connection.
+1757921354: Client sproutcast-client closed its connection.
+1757921355: New connection from 172.18.0.4:58908 on port 1883.
+1757921355: New client connected from 172.18.0.4:58908 as sproutcast-client (p2, c1, k60).
+1757921356: New connection from 172.18.0.5:45935 on port 1883.
+1757921356: New client connected from 172.18.0.5:45935 as auto-9526BFE4-893B-5989-8B2D-3DF164969E5C (p2, c1, k60).
+1757922510: Client auto-9526BFE4-893B-5989-8B2D-3DF164969E5C closed its connection.
+1757922520: Client sproutcast-client closed its connection.
+1757922520: mosquitto version 2.0.22 terminating
+1757922520: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1757923165: mosquitto version 2.0.22 starting
+1757923165: Config loaded from /mosquitto/config/mosquitto.conf.
+1757923165: Opening ipv4 listen socket on port 1883.
+1757923165: Opening websockets listen socket on port 9001.
+1757923165: mosquitto version 2.0.22 running
+1757923165: New connection from 172.18.0.4:40372 on port 1883.
+1757923165: New client connected from 172.18.0.4:40372 as sproutcast-client (p2, c1, k60).
+1757923166: New connection from 172.18.0.5:54585 on port 1883.
+1757923166: New client connected from 172.18.0.5:54585 as auto-0F2A23AD-C4E5-56E2-AE00-3349A2C569C3 (p2, c1, k60).

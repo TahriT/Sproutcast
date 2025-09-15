@@ -50,7 +50,7 @@ services:
       - "8001:8000"
     volumes:
       - ./data:/app/data
-
+      - ./samples:/samples:ro
   ai:
     image: sproutcast/ai:latest
     build:
