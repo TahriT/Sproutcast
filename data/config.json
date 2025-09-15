@@ -11,22 +11,34 @@
   },
   "processing": {
     "threshold": "100",
-    "publish_interval_ms": "1000",
-    "scale_px_per_cm": "1",
+    "publish_interval_ms": "30000",
+    "scale_px_per_cm": "28",
     "input_mode": "IMAGE",
-    "input_path": "/samples/plant.jpg"
+    "input_path": "/app/data/frame_raw.jpg"
   },
   "cameras": [
     {
-      "name": "Camera 1",
-      "camera_id": "1",
+      "name": "Camera 0",
+      "camera_id": "0",
       "plant_id": "plant-1",
       "room": "room-1",
       "area": "area-1",
       "input_mode": "IMAGE",
-      "input_path": "/samples/plant.jpg",
-      "input_url": ""
+      "input_path": "/app/data/frame_raw.jpg",
+      "input_url": "",
+      "calibration": {
+        "pixels_per_cm_at_30cm": 28.0,
+        "assumed_distance_cm": 30.0,
+        "sensor_width_mm": 5.76,
+        "focal_length_mm": 4.0,
+        "image_width_pixels": 1920,
+        "calibration_date": "2025-09-14",
+        "notes": "Default calibration - should be calibrated with actual setup"
+      }
     }
   ],
-  "active_camera_index": 0
+  "active_camera_index": 0,
+  "camera_id": "",
+  "scale_px_per_cm": null,
+  "threshold": null
 }

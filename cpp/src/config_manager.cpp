@@ -99,7 +99,7 @@ void ConfigManager::parseProcessingConfig() {
     
     // Global settings
     processing_config.threshold = global.value("threshold", 100);
-    processing_config.publish_interval_ms = global.value("publish_interval_ms", 1000);
+    processing_config.publish_interval_ms = global.value("publish_interval_ms", 30000);
     processing_config.scale_px_per_cm = global.value("scale_px_per_cm", 4.2);
     processing_config.enable_watershed = global.value("enable_watershed", true);
     processing_config.enable_advanced_health = global.value("enable_advanced_health", true);

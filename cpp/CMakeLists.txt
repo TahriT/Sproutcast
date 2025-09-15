@@ -21,6 +21,7 @@ add_executable(plantvision_cpp
     src/main.cpp 
     src/mqtt_client.cpp 
     src/leaf_area.cpp
+    src/vision_processor.cpp
 )
 
 target_include_directories(plantvision_cpp PRIVATE 
@@ -29,6 +30,7 @@ target_include_directories(plantvision_cpp PRIVATE
     ${NLOHMANN_JSON_INCLUDE_DIR}
 )
 
+# Add filesystem library support for C++17 std::filesystem
 target_link_libraries(plantvision_cpp PRIVATE ${OpenCV_LIBS})
 
 if(nlohmann_json_FOUND)

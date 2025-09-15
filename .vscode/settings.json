@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "chrono": "cpp",
-        "xlocale": "cpp"
+        "xlocale": "cpp",
+        "locale": "cpp",
+        "thread": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp"
     }
 }

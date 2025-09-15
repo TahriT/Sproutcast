@@ -25,10 +25,12 @@ services:
       - MQTT_HOST=mqtt-broker
       - MQTT_PORT=1883
       - MQTT_TOPIC=
-      - PUBLISH_INTERVAL_MS=1000
+      - PUBLISH_INTERVAL_MS=30000
       - THRESHOLD=100
       - INPUT_MODE=IMAGE
       - INPUT_PATH=/samples/plant.jpg
+      - CONFIG_PATH=/app/data/config.json
+      - VISION_DEBUG_MODE=true  # Enable consolidated vision processor debug
     volumes:
       - ./samples:/samples:ro
       - ./data:/app/data
@@ -56,14 +58,13 @@ services:
       dockerfile: Dockerfile
     container_name: sc-ai
     depends_on:
-      - mqtt-broker
+      - cpp-app  # AI now depends on C++ for processing requests
     environment:
-      - MQTT_HOST=mqtt-broker
-      - MQTT_PORT=1883
-      - UNS_ROOM=room-1
-      - UNS_AREA=area-1
-      - CAMERA_ID=0
-      - PLANT_ID=plant-1
+      # Removed MQTT settings - AI now only processes inference requests
+      - DATA_DIR=/app/data
+      - MODELS_DIR=/app/models
+      - AI_REQUESTS_DIR=/app/data/ai_requests
+      - AI_RESULTS_DIR=/app/data/ai_results
     volumes:
       - ./data:/app/data
       - ./models:/app/models:ro

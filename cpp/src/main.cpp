@@ -10,6 +10,7 @@
 #include "mqtt_client.hpp"
 // #include "config_manager.hpp"
 #include "leaf_area.hpp"
+#include "vision_processor.hpp"
 
 using json = nlohmann::json;
 
@@ -104,7 +105,7 @@ int main() {
         
         int cameraId = getenv_int("CAMERA_ID", json_get_or<int>(cfg, "camera_id", 0));
         int thresholdValue = getenv_int("THRESHOLD", json_get_nested_or<int>(cfg, "processing", "threshold", 100));
-        int intervalMs = getenv_int("PUBLISH_INTERVAL_MS", json_get_nested_or<int>(cfg, "processing", "publish_interval_ms", 1000));
+        int intervalMs = getenv_int("PUBLISH_INTERVAL_MS", json_get_nested_or<int>(cfg, "processing", "publish_interval_ms", 30000));
         std::string mqttHost = getenv_str("MQTT_HOST", json_get_nested_or<std::string>(cfg, "mqtt", "host", std::string("localhost")).c_str());
         int mqttPort = getenv_int("MQTT_PORT", json_get_nested_or<int>(cfg, "mqtt", "port", 1883));
         double scalePxPerCm = std::atof(getenv_str("SCALE_PX_PER_CM", std::to_string(json_get_nested_or<double>(cfg, "processing", "scale_px_per_cm", 0.0)).c_str()).c_str());
@@ -211,6 +212,13 @@ int runLegacyMode(const nlohmann::json& cfg, int cameraId, int thresholdValue, i
         std::cerr << "Failed to connect to MQTT broker at " << mqttHost << ":" << mqttPort << "\n";
     }
 
+    // Initialize the consolidated VisionProcessor (replaces duplicate OpenCV in Python)
+    VisionProcessor visionProcessor;
+    visionProcessor.configureChangeDetection(10.0, 15.0, 0.08, 0.15);
+    visionProcessor.setDebugMode(true, "/app/data/debug");
+    
+    std::cout << "Using consolidated VisionProcessor - OpenCV operations moved from Python to C++" << std::endl;
+
     while (true) {
         cv::Mat frame;
         if ((inputMode == "CAMERA" || inputMode == "NETWORK") && cap.isOpened()) {
@@ -227,6 +235,25 @@ int runLegacyMode(const nlohmann::json& cfg, int cameraId, int thresholdValue, i
 
         // Use new plant analysis system
         PlantAnalysisResult analysisResult = analyzePlants(frame, thresholdValue, scalePxPerCm);
+        
+        // Step 1: Process basic metrics with consolidated OpenCV (replaces Python duplicate)
+        VisionProcessor::BasicMetrics basicMetrics = visionProcessor.processBasicMetrics(frame);
+        
+        // Step 2: Determine if AI analysis is needed (smart triggering)
+        bool runAIAnalysis = basicMetrics.ai_analysis_required;
+        std::string aiRequestId = "";
+        
+        if (runAIAnalysis) {
+            // Generate AI request data
+            VisionProcessor::AIRequestData aiRequest = visionProcessor.generateAIRequest(frame, basicMetrics);
+            aiRequestId = "req_" + std::to_string(basicMetrics.frame_number);
+            
+            // Save request for Python AI module
+            if (visionProcessor.saveAIRequestData(aiRequest, aiRequestId)) {
+                std::cout << "AI analysis requested (frame " << basicMetrics.frame_number << "): " 
+                         << basicMetrics.change_detection.change_reason << std::endl;
+            }
+        }
         
         // Save annotated frame
         try {
@@ -302,7 +329,28 @@ int runLegacyMode(const nlohmann::json& cfg, int cameraId, int thresholdValue, i
             {"total_area_cm2", analysisResult.totalAreaCm2},
             {"scale_px_per_cm", analysisResult.scalePxPerCm},
             {"sprouts", sprouts},
-            {"plants", plants}
+            {"plants", plants},
+            // Add consolidated vision metrics (replaces Python AI module basic processing)
+            {"vision_metrics", {
+                {"frame_number", basicMetrics.frame_number},
+                {"green_ratio", basicMetrics.color_analysis.green_ratio},
+                {"health_indicator", basicMetrics.color_analysis.health_indicator},
+                {"total_green_pixels", basicMetrics.color_analysis.total_green_pixels},
+                {"ndvi", basicMetrics.color_analysis.ndvi},
+                {"exg", basicMetrics.color_analysis.exg},
+                {"change_detection", {
+                    {"significant_change", basicMetrics.change_detection.significant_change},
+                    {"hue_change", basicMetrics.change_detection.hue_change},
+                    {"saturation_change", basicMetrics.change_detection.saturation_change},
+                    {"green_ratio_change", basicMetrics.change_detection.green_ratio_change},
+                    {"motion_magnitude", basicMetrics.change_detection.motion_magnitude},
+                    {"change_reason", basicMetrics.change_detection.change_reason}
+                }},
+                {"ai_analysis", {
+                    {"required", basicMetrics.ai_analysis_required},
+                    {"request_id", aiRequestId}
+                }}
+            }}
         };
 
         // Create organized directory structure

@@ -44,13 +44,13 @@
   "processing": {
     "global": {
       "threshold": 100,
-      "publish_interval_ms": 1000,
+      "publish_interval_ms": 30000,
       "scale_px_per_cm": 4.2,
       "enable_watershed": true,
       "enable_advanced_health": true
     },
     "sprout_specific": {
-      "publish_interval_ms": 500,
+      "publish_interval_ms": 15000,
       "sensitivity_multiplier": 1.2,
       "min_area_pixels": 50,
       "max_area_pixels": 5000,
@@ -58,7 +58,7 @@
       "morphology_kernel": 3
     },
     "plant_specific": {
-      "publish_interval_ms": 1000,
+      "publish_interval_ms": 30000,
       "min_area_pixels": 100,
       "enable_petal_detection": true,
       "enable_fruit_detection": true,
