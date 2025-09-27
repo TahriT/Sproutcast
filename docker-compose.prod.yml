@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  # MQTT Broker
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    container_name: plantvision-mqtt-prod
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WS_PORT:-9001}:9001"
+    volumes:
+      - mqtt_data:/mosquitto/data
+      - mqtt_logs:/mosquitto/log
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    environment:
+      - MOSQUITTO_USERNAME=${MQTT_USERNAME:-plantvision}
+      - MOSQUITTO_PASSWORD=${MQTT_PASSWORD:-secure123}
+    restart: unless-stopped
+    networks:
+      - plantvision
+
+  # C++ Vision Processing Application
+  cpp-app:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${GITHUB_REPOSITORY:-tahrit/plantvision}-cpp:${IMAGE_TAG:-latest}
+    container_name: plantvision-cpp-prod
+    depends_on:
+      - mqtt-broker
+    volumes:
+      - shared_data:/app/data
+      - model_cache:/app/models
+      - logs:/app/logs
+    environment:
+      - CAMERA_ID=${CAMERA_ID:-0}
+      - MQTT_HOST=mqtt-broker
+      - MQTT_PORT=1883
+      - MQTT_USERNAME=${MQTT_USERNAME:-plantvision}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-secure123}
+      - MQTT_TOPIC=${MQTT_TOPIC:-plantvision/area/greenhouse/camera}
+      - PUBLISH_INTERVAL_MS=${PUBLISH_INTERVAL_MS:-30000}
+      - THRESHOLD=${THRESHOLD:-100}
+      - CONFIG_PATH=/app/data/config.json
+      - VISION_DEBUG_MODE=${DEBUG_MODE:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - SCALE_PX_PER_CM=${SCALE_PX_PER_CM:-28.0}
+    devices:
+      - /dev/video0:/dev/video0  # Camera device
+    restart: unless-stopped
+    networks:
+      - plantvision
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # AI Processing Module
+  ai:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${GITHUB_REPOSITORY:-tahrit/plantvision}-ai:${IMAGE_TAG:-latest}
+    container_name: plantvision-ai-prod
+    depends_on:
+      - mqtt-broker
+    volumes:
+      - shared_data:/app/data
+      - model_cache:/app/models:ro
+      - logs:/app/logs
+    environment:
+      - MQTT_HOST=mqtt-broker
+      - MQTT_PORT=1883
+      - MQTT_USERNAME=${MQTT_USERNAME:-plantvision}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-secure123}
+      - MODEL_CACHE_DIR=/app/models
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CUDA_VISIBLE_DEVICES=${CUDA_DEVICES:-}
+    restart: unless-stopped
+    networks:
+      - plantvision
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Web Interface
+  web-ui:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${GITHUB_REPOSITORY:-tahrit/plantvision}-web:${IMAGE_TAG:-latest}
+    container_name: plantvision-web-prod
+    depends_on:
+      - mqtt-broker
+      - cpp-app
+    ports:
+      - "${WEB_PORT:-8001}:8000"
+    volumes:
+      - shared_data:/app/data
+      - logs:/app/logs:ro
+    environment:
+      - MQTT_HOST=mqtt-broker
+      - MQTT_PORT=1883
+      - MQTT_USERNAME=${MQTT_USERNAME:-plantvision}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-secure123}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENVIRONMENT=production
+    restart: unless-stopped
+    networks:
+      - plantvision
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # Monitoring and Logging (optional)
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: plantvision-watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.docker/config.json:/config.json:ro
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600  # Check for updates every hour
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+      - WATCHTOWER_LABEL_ENABLE=true
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: unless-stopped
+    networks:
+      - plantvision
+
+  # Health monitoring
+  healthcheck:
+    image: curlimages/curl:latest
+    container_name: plantvision-healthcheck
+    depends_on:
+      - web-ui
+    command: >
+      sh -c "
+        while true; do
+          curl -f http://web-ui:8000/health || exit 1
+          sleep 30
+        done
+      "
+    restart: unless-stopped
+    networks:
+      - plantvision
+
+networks:
+  plantvision:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  shared_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}
+  
+  model_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MODEL_CACHE_PATH:-./models}
+  
+  logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH:-./logs}
+  
+  mqtt_data:
+    driver: local
+  
+  mqtt_logs:
+    driver: local

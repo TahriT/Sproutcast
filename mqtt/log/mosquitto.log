@@ -655,3 +655,4 @@
 1757923165: New client connected from 172.18.0.4:40372 as sproutcast-client (p2, c1, k60).
 1757923166: New connection from 172.18.0.5:54585 on port 1883.
 1757923166: New client connected from 172.18.0.5:54585 as auto-0F2A23AD-C4E5-56E2-AE00-3349A2C569C3 (p2, c1, k60).
+1757924965: Saving in-memory database to /mosquitto/data//mosquitto.db.

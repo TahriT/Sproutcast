@@ -1581,13 +1581,12 @@ def unified_app(request: Request, page: str = "dashboard"):
                 }
             }
 
-            // Toggle event handlers
-            document.getElementById('show-unknown').onchange = toggleUnknownPlants;
-            document.getElementById('debug-mode-toggle').onchange = toggleDebugMode;
-            document.getElementById('opencv-annotations-toggle').onchange = toggleOpenCVAnnotations;
-
             // Initialize application
             document.addEventListener('DOMContentLoaded', function() {
+                // Toggle event handlers - moved inside DOMContentLoaded
+                document.getElementById('show-unknown').onchange = toggleUnknownPlants;
+                document.getElementById('debug-mode-toggle').onchange = toggleDebugMode;
+                document.getElementById('opencv-annotations-toggle').onchange = toggleOpenCVAnnotations;
                 // Set initial page based on URL
                 const path = window.location.pathname;
                 const initialPage = path === '/' ? 'dashboard' : path.substring(1);
@@ -2093,3 +2092,57 @@ async def clear_plants():
         })
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and deployment"""
+    try:
+        import time
+        import os
+        
+        # Check if data directory exists and is writable
+        data_dir = "/app/data"
+        data_healthy = os.path.exists(data_dir) and os.access(data_dir, os.W_OK)
+        
+        # Check if MQTT is configured
+        mqtt_configured = bool(os.getenv("MQTT_HOST"))
+        
+        # Check if recent data exists (within last 5 minutes)
+        recent_data = False
+        try:
+            for file in os.listdir(data_dir):
+                if file.startswith('plant_') and file.endswith('.json'):
+                    file_path = os.path.join(data_dir, file)
+                    if os.path.getmtime(file_path) > time.time() - 300:  # 5 minutes
+                        recent_data = True
+                        break
+        except:
+            pass
+        
+        # Overall health status
+        healthy = data_healthy and mqtt_configured
+        
+        health_info = {
+            "status": "healthy" if healthy else "degraded",
+            "timestamp": time.time(),
+            "services": {
+                "data_directory": "ok" if data_healthy else "error",
+                "mqtt_config": "ok" if mqtt_configured else "not_configured", 
+                "recent_data": "ok" if recent_data else "stale"
+            },
+            "version": "1.0.0",
+            "environment": os.getenv("ENVIRONMENT", "development")
+        }
+        
+        status_code = 200 if healthy else 503
+        return JSONResponse(content=health_info, status_code=status_code)
+        
+    except Exception as e:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "error": str(e),
+                "timestamp": time.time()
+            }, 
+            status_code=500
+        )

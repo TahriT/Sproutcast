@@ -17,6 +17,20 @@ if(NOT nlohmann_json_FOUND)
     endif()
 endif()
 
+# Find ONNX Runtime (optional for AI inference)
+find_path(ONNXRUNTIME_INCLUDE_DIR onnxruntime_cxx_api.h
+    HINTS /usr/include/onnxruntime /usr/local/include/onnxruntime)
+find_library(ONNXRUNTIME_LIB onnxruntime
+    HINTS /usr/lib /usr/local/lib)
+
+if(ONNXRUNTIME_INCLUDE_DIR AND ONNXRUNTIME_LIB)
+    message(STATUS "Found ONNX Runtime: ${ONNXRUNTIME_LIB}")
+    set(HAVE_ONNXRUNTIME ON)
+else()
+    message(STATUS "ONNX Runtime not found - AI models will use Python fallback")
+    set(HAVE_ONNXRUNTIME OFF)
+endif()
+
 add_executable(plantvision_cpp 
     src/main.cpp 
     src/mqtt_client.cpp 
@@ -29,6 +43,7 @@ target_include_directories(plantvision_cpp PRIVATE
     ${OpenCV_INCLUDE_DIRS} 
     include
     ${NLOHMANN_JSON_INCLUDE_DIR}
+    ${ONNXRUNTIME_INCLUDE_DIR}
 )
 
 # Add filesystem library support for C++17 std::filesystem
@@ -36,5 +51,10 @@ target_link_libraries(plantvision_cpp PRIVATE ${OpenCV_LIBS})
 
 if(nlohmann_json_FOUND)
     target_link_libraries(plantvision_cpp PRIVATE nlohmann_json::nlohmann_json)
+endif()
+
+if(HAVE_ONNXRUNTIME)
+    target_link_libraries(plantvision_cpp PRIVATE ${ONNXRUNTIME_LIB})
+    target_compile_definitions(plantvision_cpp PRIVATE HAVE_ONNXRUNTIME)
 endif()
 

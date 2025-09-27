@@ -412,15 +412,84 @@ static std::vector<cv::Point> detectYellowAreas(const cv::Mat& image, const cv::
 // ========== END ENHANCED ANALYSIS ==========
 
 PlantType classifyPlantType(const cv::Mat &roi, const cv::Rect &bbox, double areaPixels, double scalePxPerCm) {
-    // Primary classification based on size
-    if (areaPixels < SPROUT_SIZE_THRESHOLD) {
+    // Primary classification based on size - smaller threshold for better accuracy
+    if (areaPixels < 2500.0) {  // Reduced from 5000 to reduce false positives
         return PlantType::SPROUT;
     }
     
     // Secondary classification based on physical height if scale is known
     if (scalePxPerCm > 0.0) {
         double heightCm = bbox.height / scalePxPerCm;
-        if (heightCm < SPROUT_HEIGHT_THRESHOLD) {
+        if (heightCm < 5.0) {  // Reduced from 8.0 cm for better sprout detection
+            return PlantType::SPROUT;
+        }
+    }
+    
+    // Advanced morphological analysis for sprout characteristics
+    cv::Mat gray, binary;
+    cv::cvtColor(roi, gray, cv::COLOR_BGR2GRAY);
+    cv::threshold(gray, binary, 0, 255, cv::THRESH_BINARY_INV + cv::THRESH_OTSU);
+    
+    // Find contours in the ROI
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    
+    if (!contours.empty()) {
+        // Find the largest contour (main plant structure)
+        auto largestContour = *std::max_element(contours.begin(), contours.end(),
+            [](const std::vector<cv::Point>& a, const std::vector<cv::Point>& b) {
+                return cv::contourArea(a) < cv::contourArea(b);
+            });
+        
+        // Analyze structure for sprout characteristics
+        double solidity = calculateSolidity(largestContour);
+        cv::RotatedRect ellipse = cv::fitEllipse(largestContour);
+        double aspectRatio = std::max(ellipse.size.width, ellipse.size.height) / 
+                           std::min(ellipse.size.width, ellipse.size.height);
+        
+        // Sprout characteristics:
+        // - High solidity (compact, simple shape)
+        // - Lower aspect ratio (not too elongated)
+        // - Smaller overall area
+        if (solidity > 0.75 && aspectRatio < 3.0 && areaPixels < 4000.0) {
+            return PlantType::SPROUT;
+        }
+        
+        // Check for single origin point characteristic of sprouts
+        cv::Point2f bottomCenter(bbox.x + bbox.width/2.0f, bbox.y + bbox.height);
+        
+        // Create skeleton to analyze branching structure
+        cv::Mat skeleton;
+        skeletonize(binary, skeleton);
+        
+        // Count connection points near the bottom (root area)
+        int originConnections = 0;
+        int searchRadius = std::min(bbox.height, bbox.width) / 4;
+        cv::Point localBottom(binary.cols/2, binary.rows - 5); // Bottom center in ROI coords
+        
+        for (int y = std::max(0, localBottom.y - searchRadius); 
+             y < std::min(binary.rows, localBottom.y + searchRadius); y++) {
+            for (int x = std::max(0, localBottom.x - searchRadius); 
+                 x < std::min(binary.cols, localBottom.x + searchRadius); x++) {
+                if (skeleton.at<uchar>(y, x) > 0) {
+                    // Count neighbors to identify connection points
+                    int neighbors = 0;
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dx = -1; dx <= 1; dx++) {
+                            if (dy == 0 && dx == 0) continue;
+                            int ny = y + dy, nx = x + dx;
+                            if (ny >= 0 && ny < skeleton.rows && nx >= 0 && nx < skeleton.cols) {
+                                if (skeleton.at<uchar>(ny, nx) > 0) neighbors++;
+                            }
+                        }
+                    }
+                    if (neighbors >= 2) originConnections++;
+                }
+            }
+        }
+        
+        // Sprouts typically have fewer origin connection points (simpler structure)
+        if (originConnections <= 3 && areaPixels < 3500.0) {
             return PlantType::SPROUT;
         }
     }
