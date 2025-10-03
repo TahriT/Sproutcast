@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   mqtt-broker:
     image: eclipse-mosquitto:2
@@ -13,7 +11,7 @@ services:
       - "9001:9001"
 
   cpp-app:
-    image: sproutcast/cpp:latest
+    image: plantvision/cpp:latest
     build:
       context: ./cpp
       dockerfile: Dockerfile
@@ -36,7 +34,7 @@ services:
       - ./data:/app/data
 
   web-ui:
-    image: sproutcast/web:latest
+    image: plantvision/web:latest
     build:
       context: ./web
       dockerfile: Dockerfile
@@ -52,7 +50,7 @@ services:
       - ./data:/app/data
       - ./samples:/samples:ro
   ai:
-    image: sproutcast/ai:latest
+    image: plantvision/ai:latest
     build:
       context: ./ai
       dockerfile: Dockerfile

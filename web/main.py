@@ -8,7 +8,7 @@ import json as pyjson
 import paho.mqtt.client as mqtt
 from typing import Any, Dict
 
-app = FastAPI(title="SproutCast Web UI")
+app = FastAPI(title="PlantVision Web UI")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/frames", StaticFiles(directory="/app/data"), name="frames")
@@ -54,7 +54,7 @@ def mqtt_thread():
     host = state["config"]["mqtt"]["host"]
     port = int(state["config"]["mqtt"]["port"])
     uns = state["config"]["uns"]
-    topic = f"sproutcast/{uns['room']}/{uns['area']}/{uns['camera_id']}/{uns['plant_id']}/telemetry"
+    topic = f"plantvision/{uns['room']}/{uns['area']}/{uns['camera_id']}/{uns['plant_id']}/telemetry"
 
     def on_message(_client, _userdata, msg):
         try:
@@ -80,7 +80,7 @@ def unified_app(request: Request, page: str = "dashboard"):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SproutCast - Plant Monitoring System</title>
+        <title>PlantVision - Plant Monitoring System</title>
         <style>
             :root { 
                 --bg:#0b1220; --fg:#e8eefb; --card:#111a2e; --accent:#4f8cff; 
@@ -266,7 +266,7 @@ def unified_app(request: Request, page: str = "dashboard"):
         <!-- Navigation Header -->
         <header class="nav">
             <div>🌿</div>
-            <h2>SproutCast</h2>
+            <h2>PlantVision</h2>
             <div class="spacer"></div>
             
             <!-- Connection Status -->

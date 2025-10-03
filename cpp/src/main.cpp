@@ -145,7 +145,7 @@ int main() {
                     plant = json_get_or<std::string>(cam, "plant_id", plant);
                 }
             }
-            topic = std::string("sproutcast/") + room + "/" + area + "/" + camIdStr + "/" + plant + "/telemetry";
+            topic = std::string("plantvision/") + room + "/" + area + "/" + camIdStr + "/" + plant + "/telemetry";
         }
         
         return runLegacyMode(cfg, cameraId, thresholdValue, intervalMs, mqttHost, mqttPort, 

@@ -200,13 +200,13 @@ void ConfigManager::parseMQTTConfig() {
         mqtt_config.broker.port = broker.value("port", 1883);
         mqtt_config.broker.username = broker.value("username", "");
         mqtt_config.broker.password = broker.value("password", "");
-        mqtt_config.broker.client_id = broker.value("client_id", "sproutcast");
+        mqtt_config.broker.client_id = broker.value("client_id", "plantvision");
     }
     
     // Topic templates
     if (config_json.contains("mqtt") && config_json["mqtt"].contains("topics")) {
         const auto& topics = config_json["mqtt"]["topics"];
-        mqtt_config.topics.base = topics.value("base", "sproutcast");
+        mqtt_config.topics.base = topics.value("base", "plantvision");
         mqtt_config.topics.system_status = topics.value("system_status", "{base}/{room}/{area}/{camera_id}/system/status");
         mqtt_config.topics.analysis_telemetry = topics.value("analysis_telemetry", "{base}/{room}/{area}/{camera_id}/analysis/telemetry");
         mqtt_config.topics.sprout_telemetry = topics.value("sprout_telemetry", "{base}/{room}/{area}/{camera_id}/sprouts/{id}/telemetry");
