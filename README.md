@@ -36,17 +36,48 @@ A high-performance, real-time plant monitoring system with advanced morphologica
 - Docker Desktop (Windows/macOS/Linux)
 - Optional: Camera device for live capture (Linux/WSL2)
 
-### Basic Deployment
+### Easy Start (Automated)
+
+**Windows (PowerShell):**
+```powershell
+# Clone and run
+git clone https://github.com/TahriT/Sproutcast.git
+cd Sproutcast
+.\start-docker.ps1
+```
+
+**Linux/macOS:**
+```bash
+# Clone and run
+git clone https://github.com/TahriT/Sproutcast.git
+cd Sproutcast
+chmod +x start-docker.sh
+./start-docker.sh
+```
+
+### Manual Deployment
 
 ```bash
 # Clone the repository
-git clone https://github.com/TahriT/sproutcast.git
-cd PlantVision
+git clone https://github.com/TahriT/Sproutcast.git
+cd Sproutcast
 
 # Start all services
 docker compose up --build
 
-# Access the web interface at http://localhost:8000
+# Access the web interface at http://localhost:8001
+```
+
+### Using Pre-built Images from Docker Hub
+
+```bash
+# Pull images from Docker Hub
+docker pull plantvision/cpp:latest
+docker pull plantvision/web:latest
+docker pull plantvision/ai:latest
+
+# Start with production configuration
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### MQTT Monitoring
@@ -147,7 +178,33 @@ plantvision/{room}/{area}/{camera}/
 - **[Data Organization](docs/DATA_ORGANIZATION.md)**: File structure and MQTT topic hierarchy
 - **[Enhancement Roadmap](docs/ENHANCEMENT_ROADMAP.md)**: Planned features and improvements
 
-## 🐛 Troubleshooting
+## � Docker Hub Images
+
+Pre-built multi-architecture images are available on Docker Hub:
+
+- **C++ Vision Service**: `plantvision/cpp:latest` - [View on Docker Hub](https://hub.docker.com/r/plantvision/cpp)
+- **Web UI**: `plantvision/web:latest` - [View on Docker Hub](https://hub.docker.com/r/plantvision/web)
+- **AI Service**: `plantvision/ai:latest` - [View on Docker Hub](https://hub.docker.com/r/plantvision/ai)
+
+### Available Architectures
+- `linux/amd64` (x86_64)
+- `linux/arm64` (ARM64, Raspberry Pi 4+, Apple Silicon)
+
+### Image Tags
+- `latest` - Latest stable release from main branch
+- `v1.0.0` - Specific version tags
+- `main` - Latest main branch build
+- `develop` - Latest development build
+
+### Setting Up Automated Builds
+
+See **[docs/DOCKERHUB_SETUP.md](docs/DOCKERHUB_SETUP.md)** for complete instructions on:
+- Configuring GitHub Actions for automated builds
+- Setting up Docker Hub repositories
+- Managing secrets and credentials
+- Customizing build workflows
+
+## �🐛 Troubleshooting
 
 ### Camera not detected
 ```bash
@@ -172,6 +229,13 @@ docker logs sc-ai
 
 # Verify model files exist
 docker exec sc-ai ls -la /app/models/
+```
+
+### Docker Desktop not running
+```bash
+# Windows: Start Docker Desktop from Start menu
+# Linux: sudo systemctl start docker
+# macOS: Open Docker Desktop application
 ```
 
 ## 🏗️ Project Structure

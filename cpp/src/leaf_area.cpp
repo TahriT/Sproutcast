@@ -459,8 +459,7 @@ PlantType classifyPlantType(const cv::Mat &roi, const cv::Rect &bbox, double are
         cv::Point2f bottomCenter(bbox.x + bbox.width/2.0f, bbox.y + bbox.height);
         
         // Create skeleton to analyze branching structure
-        cv::Mat skeleton;
-        skeletonize(binary, skeleton);
+        cv::Mat skeleton = skeletonize(binary);
         
         // Count connection points near the bottom (root area)
         int originConnections = 0;

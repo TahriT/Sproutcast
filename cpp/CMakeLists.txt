@@ -43,8 +43,12 @@ target_include_directories(plantvision_cpp PRIVATE
     ${OpenCV_INCLUDE_DIRS} 
     include
     ${NLOHMANN_JSON_INCLUDE_DIR}
-    ${ONNXRUNTIME_INCLUDE_DIR}
 )
+
+# Only add ONNX Runtime include dir if found
+if(HAVE_ONNXRUNTIME)
+    target_include_directories(plantvision_cpp PRIVATE ${ONNXRUNTIME_INCLUDE_DIR})
+endif()
 
 # Add filesystem library support for C++17 std::filesystem
 target_link_libraries(plantvision_cpp PRIVATE ${OpenCV_LIBS})

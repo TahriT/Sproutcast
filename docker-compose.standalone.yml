@@ -1,23 +1,20 @@
 services:
-  # Unified Sproutcast - ALL-IN-ONE Container
-  # Includes: C++ Vision + Web UI + AI + MQTT Broker
+  # Sproutcast - Standalone (No MQTT)
   sproutcast:
     image: sproutcast/unified:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sproutcast
+    container_name: sc-app
     environment:
       # Camera Configuration
       - CAMERA_ID=0
       - INPUT_MODE=IMAGE
       - INPUT_PATH=/samples/plant.jpg
       
-      # MQTT Configuration (internal broker)
-      - MQTT_HOST=localhost
-      - MQTT_PORT=1883
-      - MQTT_TOPIC=sproutcast/area/greenhouse/camera
-      - PUBLISH_INTERVAL_MS=30000
+      # Disable MQTT by not setting MQTT_HOST
+      # - MQTT_HOST=mqtt-broker  ← Commented out
+      # - MQTT_PORT=1883
       
       # Processing Configuration
       - THRESHOLD=100
@@ -28,16 +25,11 @@ services:
       - VISION_DEBUG_MODE=true
       - LOG_LEVEL=INFO
     ports:
-      - "5323:5323"   # Web UI (LEAF = 5323 on phone keypad! 🌿)
-      - "1883:1883"   # MQTT Broker
-      - "9001:9001"   # MQTT WebSocket (optional)
+      - "8000:8000"  # Web UI only
     volumes:
       - ./samples:/samples:ro
       - ./data:/app/data
       - ./models:/app/models:ro
-      - ./mqtt/data:/mosquitto/data
-      - ./mqtt/log:/mosquitto/log
     restart: unless-stopped
 
 volumes: {}
-
