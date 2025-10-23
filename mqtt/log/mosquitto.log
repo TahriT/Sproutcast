@@ -689,3 +689,22 @@
 1761100151: Client plantvision-client closed its connection.
 1761100152: mosquitto version 2.0.22 terminating
 1761100152: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761192262: mosquitto version 2.0.11 starting
+1761192262: Config loaded from /mosquitto/config/mosquitto.conf.
+1761192262: Opening ipv4 listen socket on port 1883.
+1761192262: Opening ipv6 listen socket on port 1883.
+1761192262: mosquitto version 2.0.11 running
+1761192263: New connection from ::1:59324 on port 1883.
+1761192263: New client connected from ::1:59324 as plantvision-client (p2, c1, k60).
+1761194062: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761195863: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761197664: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761199465: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761201266: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761203067: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761204867: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761206668: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761208469: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761210270: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761212071: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1761231523: Saving in-memory database to /mosquitto/data//mosquitto.db.

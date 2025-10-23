@@ -1,8 +1,6 @@
 services:
-  # Unified Sproutcast - ALL-IN-ONE Container
-  # Includes: C++ Vision + Web UI + AI + MQTT Broker
   sproutcast:
-    image: sproutcast/unified:latest
+    image: tahrit/sproutcast:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,7 +8,7 @@ services:
     environment:
       # Camera Configuration
       - CAMERA_ID=0
-      - INPUT_MODE=IMAGE
+      - INPUT_MODE=IMAGE           # Use IMAGE for testing, CAMERA for production
       - INPUT_PATH=/samples/plant.jpg
       
       # MQTT Configuration (internal broker)
@@ -25,19 +23,28 @@ services:
       - CONFIG_PATH=/app/data/config.json
       
       # Debug Settings
-      - VISION_DEBUG_MODE=true
+      - VISION_DEBUG_MODE=false
       - LOG_LEVEL=INFO
     ports:
       - "5323:5323"   # Web UI (LEAF = 5323 on phone keypad! 🌿)
       - "1883:1883"   # MQTT Broker
-      - "9001:9001"   # MQTT WebSocket (optional)
+      - "9001:9001"   # MQTT WebSocket
     volumes:
       - ./samples:/samples:ro
       - ./data:/app/data
       - ./models:/app/models:ro
       - ./mqtt/data:/mosquitto/data
       - ./mqtt/log:/mosquitto/log
+    # Uncomment for Linux with camera access:
+    # devices:
+    #   - /dev/video0:/dev/video0
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5323/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes: {}
 

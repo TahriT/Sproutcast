@@ -16,7 +16,7 @@ RUN apt-get update && \
       # JSON library
       nlohmann-json3-dev \
       # Python
-      python3.11 python3.11-dev python3-pip python3-venv \
+      python3.11 python3.11-dev python3.11-venv python3-pip \
       # System utilities
       curl wget ca-certificates \
       # AI dependencies
@@ -56,11 +56,14 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Install web UI dependencies
 COPY web/requirements.txt /tmp/web-requirements.txt
-RUN pip install --no-cache-dir -r /tmp/web-requirements.txt
+RUN pip install --no-cache-dir --timeout 1000 -r /tmp/web-requirements.txt
 
-# Install AI dependencies
+# Install AI dependencies with increased timeout for large packages
 COPY ai/requirements.txt /tmp/ai-requirements.txt
-RUN pip install --no-cache-dir -r /tmp/ai-requirements.txt
+RUN pip install --no-cache-dir --timeout 1000 \
+    --default-timeout=1000 \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    -r /tmp/ai-requirements.txt
 
 # ==================== FINAL UNIFIED IMAGE ====================
 FROM base AS production
@@ -88,7 +91,8 @@ RUN mkdir -p \
     /app/logs \
     /app/config \
     /mosquitto/data \
-    /mosquitto/log
+    /mosquitto/log \
+    /mosquitto/config
 
 # Configure Mosquitto MQTT broker
 RUN echo "listener 1883" > /mosquitto/config/mosquitto.conf && \

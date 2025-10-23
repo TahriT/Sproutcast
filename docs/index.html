@@ -3,35 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenPulse | Smart Plant Monitoring</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>Sproutcast | Coming Soon</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
     <style>
-        .hero-gradient {
-            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 50%, #3b82f6 100%);
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-        .plant-animation {
+        .float-animation {
             animation: float 6s ease-in-out infinite;
         }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
     </style>
 </head>
-<body class="font-sans antialiased text-gray-800">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm fixed w-full z-10">
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto text-center">
+        <!-- Logo/Icon -->
+        <div class="float-animation mb-8">
+            <div class="inline-block">
+                <svg class="w-24 h-24 mx-auto text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Main Heading -->
+        <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-4 drop-shadow-lg">
+            Sproutcast
+        </h1>
+        
+        <!-- Tagline -->
+        <p class="text-xl md:text-2xl text-white/90 mb-8 font-light">
+            AI-Powered Plant Monitoring & Growth Analytics
+        </p>
+
+        <!-- Coming Soon Badge -->
+        <div class="inline-block bg-white/20 backdrop-blur-md rounded-full px-8 py-3 mb-12">
+            <span class="text-white text-lg font-semibold pulse-animation">Coming Soon</span>
+        </div>
+
+        <!-- Description -->
+        <p class="text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Real-time vision processing for plant health monitoring, growth tracking, and intelligent analytics. 
+            Experience the future of precision agriculture.
+        </p>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white/10 backdrop-blur-md rounded-lg p-6 transform hover:scale-105 transition-transform duration-300">
+                <div class="text-3xl mb-3">🌱</div>
+                <h3 class="text-white font-semibold text-lg mb-2">Real-time Analysis</h3>
+                <p class="text-white/70 text-sm">Live camera feed processing with instant plant health metrics</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-lg p-6 transform hover:scale-105 transition-transform duration-300">
+                <div class="text-3xl mb-3">📊</div>
+                <h3 class="text-white font-semibold text-lg mb-2">Growth Tracking</h3>
+                <p class="text-white/70 text-sm">Monitor leaf area, color changes, and development stages</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md rounded-lg p-6 transform hover:scale-105 transition-transform duration-300">
+                <div class="text-3xl mb-3">☁️</div>
+                <h3 class="text-white font-semibold text-lg mb-2">MQTT Streaming</h3>
+                <p class="text-white/70 text-sm">Real-time data streaming and web dashboard monitoring</p>
+            </div>
+        </div>
+
+        <!-- Notify Form -->
+        <div class="max-w-md mx-auto">
+            <form class="flex flex-col sm:flex-row gap-3">
+                <input 
+                    type="email" 
+                    placeholder="Enter your email for updates" 
+                    class="flex-1 px-6 py-4 rounded-full text-gray-800 bg-white/90 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-white/50 transition-all"
+                    required
+                />
+                <button 
+                    type="submit" 
+                    class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-full hover:bg-white/90 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                    Notify Me
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-16 text-white/60 text-sm">
+            <p>&copy; 2025 Sproutcast. Powered by C++ & OpenCV.</p>
+            <div class="mt-4 flex justify-center gap-6">
+                <a href="https://github.com/TahriT/Sproutcast" target="_blank" class="hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">

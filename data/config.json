@@ -43,7 +43,7 @@
       "input_path": "/samples/plant.jpg"
     }
   ],
-  "active_camera_index": 0,
+  "active_camera_index": 1,
   "camera_id": "",
   "scale_px_per_cm": null,
   "threshold": null,
@@ -55,9 +55,9 @@
   },
   "vision": {
     "annotation_view": "health",
-    "show_annotations": true,
+    "show_annotations": false,
     "annotation_style": "full",
-    "debug_mode": false,
+    "debug_mode": true,
     "debug_output_path": "/app/data/debug"
   }
 }
