@@ -3,771 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sproutcast | Coming Soon</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Sproutcast - Coming Soon</title>
     <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
-        .float-animation {
-            animation: float 6s ease-in-out infinite;
+        
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
         }
-        .pulse-animation {
-            animation: pulse 2s ease-in-out infinite;
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: grow 2s ease-in-out infinite;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+        
+        @keyframes grow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .github-link {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .github-link:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .status {
+            margin-top: 3rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .logo { font-size: 3rem; }
+            h1 { font-size: 2rem; }
+            .tagline { font-size: 1.2rem; }
+            .description { font-size: 1rem; }
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-    
-    <!-- Main Container -->
-    <div class="max-w-4xl mx-auto text-center">
-        <!-- Logo/Icon -->
-        <div class="float-animation mb-8">
-            <div class="inline-block">
-                <svg class="w-24 h-24 mx-auto text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Main Heading -->
-        <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-4 drop-shadow-lg">
-            Sproutcast
-        </h1>
-        
-        <!-- Tagline -->
-        <p class="text-xl md:text-2xl text-white/90 mb-8 font-light">
-            AI-Powered Plant Monitoring & Growth Analytics
+<body>
+    <div class="container">
+        <div class="logo">🌱</div>
+        <h1>Sproutcast</h1>
+        <p class="tagline">Real-time Plant Vision System</p>
+        <p class="description">
+            High-performance C++ vision processing with AI-powered plant analysis. 
+            Monitor your plants in real-time with advanced image processing and MQTT telemetry.
         </p>
-
-        <!-- Coming Soon Badge -->
-        <div class="inline-block bg-white/20 backdrop-blur-md rounded-full px-8 py-3 mb-12">
-            <span class="text-white text-lg font-semibold pulse-animation">Coming Soon</span>
-        </div>
-
-        <!-- Description -->
-        <p class="text-lg text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Real-time vision processing for plant health monitoring, growth tracking, and intelligent analytics. 
-            Experience the future of precision agriculture.
-        </p>
-
-        <!-- Features Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div class="bg-white/10 backdrop-blur-md rounded-lg p-6 transform hover:scale-105 transition-transform duration-300">
-                <div class="text-3xl mb-3">🌱</div>
-                <h3 class="text-white font-semibold text-lg mb-2">Real-time Analysis</h3>
-                <p class="text-white/70 text-sm">Live camera feed processing with instant plant health metrics</p>
-            </div>
-            <div class="bg-white/10 backdrop-blur-md rounded-lg p-6 transform hover:scale-105 transition-transform duration-300">
-                <div class="text-3xl mb-3">📊</div>
-                <h3 class="text-white font-semibold text-lg mb-2">Growth Tracking</h3>
-                <p class="text-white/70 text-sm">Monitor leaf area, color changes, and development stages</p>
-            </div>
-            <div class="bg-white/10 backdrop-blur-md rounded-lg p-6 transform hover:scale-105 transition-transform duration-300">
-                <div class="text-3xl mb-3">☁️</div>
-                <h3 class="text-white font-semibold text-lg mb-2">MQTT Streaming</h3>
-                <p class="text-white/70 text-sm">Real-time data streaming and web dashboard monitoring</p>
-            </div>
-        </div>
-
-        <!-- Notify Form -->
-        <div class="max-w-md mx-auto">
-            <form class="flex flex-col sm:flex-row gap-3">
-                <input 
-                    type="email" 
-                    placeholder="Enter your email for updates" 
-                    class="flex-1 px-6 py-4 rounded-full text-gray-800 bg-white/90 backdrop-blur-md focus:outline-none focus:ring-4 focus:ring-white/50 transition-all"
-                    required
-                />
-                <button 
-                    type="submit" 
-                    class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-full hover:bg-white/90 transform hover:scale-105 transition-all duration-300 shadow-lg"
-                >
-                    Notify Me
-                </button>
-            </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="mt-16 text-white/60 text-sm">
-            <p>&copy; 2025 Sproutcast. Powered by C++ & OpenCV.</p>
-            <div class="mt-4 flex justify-center gap-6">
-                <a href="https://github.com/TahriT/Sproutcast" target="_blank" class="hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
-                    </svg>
-                </a>
-            </div>
+        <a href="https://github.com/TahriT/Sproutcast" class="github-link">
+            View on GitHub →
+        </a>
+        <div class="status">
+            🚀 Currently in active development
         </div>
     </div>
-
-</body>
-</html>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <i data-feather="droplet" class="text-green-500 h-8 w-8"></i>
-                        <span class="ml-2 text-xl font-bold text-gray-900">GreenPulse</span>
-                    </div>
-                </div>
-                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
-                    <a href="#" class="text-green-600 px-3 py-2 text-sm font-medium">Home</a>
-                    <a href="#features" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Features</a>
-                    <a href="#how-it-works" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">How It Works</a>
-                    <a href="#pricing" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Pricing</a>
-                    <a href="#contact" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium">Contact</a>
-                    <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">
-                        Get Started
-                    </button>
-                </div>
-                <div class="-mr-2 flex items-center md:hidden">
-                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none">
-                        <i data-feather="menu"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <div id="vanta-globe" class="hero-gradient pt-24 pb-16 md:pt-32 md:pb-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
-                <div class="mt-10 mx-auto max-w-md sm:max-w-lg lg:mt-0 lg:mx-0" data-aos="fade-right">
-                    <h1 class="text-4xl tracking-tight font-extrabold text-white sm:text-5xl sm:leading-tight lg:text-6xl">
-                        Keep Your Plants <span class="block">Thriving</span>
-                    </h1>
-                    <p class="mt-3 text-xl text-green-100 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                        Smart monitoring system that tracks your plant's health and provides real-time alerts.
-                    </p>
-                    <div class="mt-10 sm:flex sm:justify-center lg:justify-start">
-                        <div class="rounded-md shadow">
-                            <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
-                                Try it free
-                            </a>
-                        </div>
-                        <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-                            <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 bg-opacity-60 hover:bg-opacity-70 md:py-4 md:text-lg md:px-10">
-                                See demo
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0" data-aos="fade-left">
-                    <div class="plant-animation">
-                        <img class="w-full" src="http://static.photos/nature/1024x576/42" alt="Healthy plant">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div id="features" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center" data-aos="fade-up">
-                <h2 class="text-base text-green-600 font-semibold tracking-wide uppercase">Features</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Everything your plants need
-                </p>
-                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Our comprehensive monitoring system takes care of all aspects of plant health.
-                </p>
-            </div>
-
-            <div class="mt-20">
-                <div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
-                    <!-- Feature 1 -->
-                    <div class="feature-card transition-all duration-300 ease-in-out" data-aos="fade-up" data-aos-delay="100">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white">
-                            <i data-feather="thermometer"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Temperature Monitoring</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Track ambient temperature to ensure optimal growing conditions for your plants.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 2 -->
-                    <div class="feature-card transition-all duration-300 ease-in-out" data-aos="fade-up" data-aos-delay="200">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                            <i data-feather="droplet"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Soil Moisture</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Precise soil moisture readings to prevent over or under watering your plants.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 3 -->
-                    <div class="feature-card transition-all duration-300 ease-in-out" data-aos="fade-up" data-aos-delay="300">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-500 text-white">
-                            <i data-feather="sun"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Light Exposure</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Measure light levels to ensure your plants get the perfect amount of sunlight.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 4 -->
-                    <div class="feature-card transition-all duration-300 ease-in-out" data-aos="fade-up" data-aos-delay="400">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-500 text-white">
-                            <i data-feather="alert-triangle"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Smart Alerts</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Get instant notifications when your plants need attention.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 5 -->
-                    <div class="feature-card transition-all duration-300 ease-in-out" data-aos="fade-up" data-aos-delay="500">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-red-500 text-white">
-                            <i data-feather="bar-chart-2"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Growth Tracking</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Visualize your plant's growth over time with detailed analytics.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 6 -->
-                    <div class="feature-card transition-all duration-300 ease-in-out" data-aos="fade-up" data-aos-delay="600">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="smartphone"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Mobile App</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Monitor your plants from anywhere with our intuitive mobile application.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- How It Works Section -->
-    <div id="how-it-works" class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center" data-aos="fade-up">
-                <h2 class="text-base text-green-600 font-semibold tracking-wide uppercase">How it works</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Simple setup, smart results
-                </p>
-                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Get started in minutes and enjoy healthier plants with minimal effort.
-                </p>
-            </div>
-
-            <div class="mt-20">
-                <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-                    <!-- Step 1 -->
-                    <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-up" data-aos-delay="100">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600">
-                            <span class="text-xl font-bold">1</span>
-                        </div>
-                        <h3 class="mt-4 text-lg leading-6 font-medium text-gray-900">Place the Sensor</h3>
-                        <p class="mt-2 text-base text-gray-500">
-                            Simply insert our waterproof sensor into your plant's soil near the roots.
-                        </p>
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-up" data-aos-delay="200">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600">
-                            <span class="text-xl font-bold">2</span>
-                        </div>
-                        <h3 class="mt-4 text-lg leading-6 font-medium text-gray-900">Connect to App</h3>
-                        <p class="mt-2 text-base text-gray-500">
-                            Pair the sensor with your smartphone via Bluetooth in our mobile app.
-                        </p>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-up" data-aos-delay="300">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600">
-                            <span class="text-xl font-bold">3</span>
-                        </div>
-                        <h3 class="mt-4 text-lg leading-6 font-medium text-gray-900">Monitor & Enjoy</h3>
-                        <p class="mt-2 text-base text-gray-500">
-                            Receive real-time data and alerts to keep your plants thriving.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="mt-16 flex justify-center" data-aos="fade-up">
-                    <img class="rounded-lg shadow-xl" src="http://static.photos/technology/1024x576/12" alt="App dashboard">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pricing Section -->
-    <div id="pricing" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center" data-aos="fade-up">
-                <h2 class="text-base text-green-600 font-semibold tracking-wide uppercase">Pricing</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Simple, transparent pricing
-                </p>
-                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Choose the plan that fits your gardening needs.
-                </p>
-            </div>
-
-            <div class="mt-20">
-                <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-                    <!-- Basic Plan -->
-                    <div class="bg-gray-50 rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="100">
-                        <div class="px-6 py-8">
-                            <h3 class="text-lg font-medium text-gray-900">Starter</h3>
-                            <div class="mt-4 flex items-baseline text-5xl font-extrabold">
-                                <span class="text-gray-900">$29</span>
-                                <span class="ml-1 text-2xl font-medium text-gray-500">/sensor</span>
-                            </div>
-                            <p class="mt-5 text-lg text-gray-500">
-                                Perfect for monitoring a single plant.
-                            </p>
-                        </div>
-                        <div class="px-6 pt-6 pb-8 bg-gray-100">
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">1 plant sensor</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Basic monitoring</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Email alerts</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="x" class="h-6 w-6 text-gray-400"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-500">No mobile app</p>
-                                </li>
-                            </ul>
-                            <div class="mt-8">
-                                <button class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Popular Plan -->
-                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-green-500 transform scale-105" data-aos="fade-up" data-aos-delay="200">
-                        <div class="px-6 py-8">
-                            <div class="flex justify-between">
-                                <h3 class="text-lg font-medium text-gray-900">Garden Pro</h3>
-                                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                    Most Popular
-                                </span>
-                            </div>
-                            <div class="mt-4 flex items-baseline text-5xl font-extrabold">
-                                <span class="text-gray-900">$79</span>
-                                <span class="ml-1 text-2xl font-medium text-gray-500">/3 sensors</span>
-                            </div>
-                            <p class="mt-5 text-lg text-gray-500">
-                                Ideal for small gardens or multiple houseplants.
-                            </p>
-                        </div>
-                        <div class="px-6 pt-6 pb-8 bg-gray-50">
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">3 plant sensors</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Advanced monitoring</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Push notifications</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Mobile app access</p>
-                                </li>
-                            </ul>
-                            <div class="mt-8">
-                                <button class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 md:py-4 md:text-lg md:px-10">
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Enterprise Plan -->
-                    <div class="bg-gray-50 rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="300">
-                        <div class="px-6 py-8">
-                            <h3 class="text-lg font-medium text-gray-900">Commercial</h3>
-                            <div class="mt-4 flex items-baseline text-5xl font-extrabold">
-                                <span class="text-gray-900">$199</span>
-                                <span class="ml-1 text-2xl font-medium text-gray-500">/10 sensors</span>
-                            </div>
-                            <p class="mt-5 text-lg text-gray-500">
-                                For commercial greenhouses and large gardens.
-                            </p>
-                        </div>
-                        <div class="px-6 pt-6 pb-8 bg-gray-100">
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">10 plant sensors</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Professional dashboard</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">Team access</p>
-                                </li>
-                                <li class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="check" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <p class="ml-3 text-base text-gray-700">API access</p>
-                                </li>
-                            </ul>
-                            <div class="mt-8">
-                                <button class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Testimonials -->
-    <div class="py-16 bg-green-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center" data-aos="fade-up">
-                <h2 class="text-base text-green-600 font-semibold tracking-wide uppercase">Testimonials</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Loved by plant enthusiasts
-                </p>
-            </div>
-
-            <div class="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                <!-- Testimonial 1 -->
-                <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-up" data-aos-delay="100">
-                    <div class="flex items-center">
-                        <img class="h-12 w-12 rounded-full" src="http://static.photos/people/200x200/1" alt="Sarah J.">
-                        <div class="ml-4">
-                            <h4 class="text-lg font-medium text-gray-900">Sarah J.</h4>
-                            <p class="text-green-600">Plant Collector</p>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <p class="text-gray-600 italic">
-                            "GreenPulse saved my rare orchids! The moisture alerts helped me perfect my watering schedule."
-                        </p>
-                    </div>
-                    <div class="mt-4 flex text-yellow-400">
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                    </div>
-                </div>
-
-                <!-- Testimonial 2 -->
-                <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-up" data-aos-delay="200">
-                    <div class="flex items-center">
-                        <img class="h-12 w-12 rounded-full" src="http://static.photos/people/200x200/2" alt="Michael T.">
-                        <div class="ml-4">
-                            <h4 class="text-lg font-medium text-gray-900">Michael T.</h4>
-                            <p class="text-green-600">Urban Gardener</p>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <p class="text-gray-600 italic">
-                            "As someone who travels frequently, GreenPulse gives me peace of mind about my plants back home."
-                        </p>
-                    </div>
-                    <div class="mt-4 flex text-yellow-400">
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                    </div>
-                </div>
-
-                <!-- Testimonial 3 -->
-                <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-up" data-aos-delay="300">
-                    <div class="flex items-center">
-                        <img class="h-12 w-12 rounded-full" src="http://static.photos/people/200x200/3" alt="Lisa K.">
-                        <div class="ml-4">
-                            <h4 class="text-lg font-medium text-gray-900">Lisa K.</h4>
-                            <p class="text-green-600">Plant Newbie</p>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <p class="text-gray-600 italic">
-                            "I used to kill every plant I owned. With GreenPulse, my plants are thriving for the first time!"
-                        </p>
-                    </div>
-                    <div class="mt-4 flex text-yellow-400">
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                        <i data-feather="star" class="h-5 w-5 fill-current"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- CTA Section -->
-    <div class="bg-green-600">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
-            <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl" data-aos="fade-right">
-                <span class="block">Ready to dive in?</span>
-                <span class="block text-green-100">Start your plant monitoring journey today.</span>
-            </h2>
-            <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0" data-aos="fade-left">
-                <div class="inline-flex rounded-md shadow">
-                    <a href="#" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-green-600 bg-white hover:bg-green-50">
-                        Get started
-                    </a>
-                </div>
-                <div class="ml-3 inline-flex rounded-md shadow">
-                    <a href="#" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-500 bg-opacity-60 hover:bg-opacity-70">
-                        Live demo
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contact Section -->
-    <div id="contact" class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center" data-aos="fade-up">
-                <h2 class="text-base text-green-600 font-semibold tracking-wide uppercase">Contact us</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    We'd love to hear from you
-                </p>
-                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Have questions about GreenPulse? Get in touch with our team.
-                </p>
-            </div>
-
-            <div class="mt-16">
-                <div class="grid grid-cols-1 gap-12 lg:grid-cols-2">
-                    <div data-aos="fade-right">
-                        <form class="space-y-8">
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                                <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500">
-                            </div>
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" id="email" name="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500">
-                            </div>
-                            <div>
-                                <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-                                <textarea id="message" name="message" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"></textarea>
-                            </div>
-                            <div>
-                                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    Send message
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    <div data-aos="fade-left">
-                        <div class="bg-gray-50 p-6 rounded-lg">
-                            <h3 class="text-lg font-medium text-gray-900">Contact Information</h3>
-                            <div class="mt-6 space-y-4">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="mail" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <div class="ml-3 text-base text-gray-500">
-                                        <p>hello@greenpulse.com</p>
-                                    </div>
-                                </div>
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="phone" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <div class="ml-3 text-base text-gray-500">
-                                        <p>+1 (555) 123-4567</p>
-                                    </div>
-                                </div>
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i data-feather="map-pin" class="h-6 w-6 text-green-500"></i>
-                                    </div>
-                                    <div class="ml-3 text-base text-gray-500">
-                                        <p>123 Plant Street<br>Garden City, CA 90210</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-8">
-                                <h3 class="text-lg font-medium text-gray-900">Follow us</h3>
-                                <div class="mt-4 flex space-x-6">
-                                    <a href="#" class="text-gray-400 hover:text-green-500">
-                                        <i data-feather="facebook" class="h-6 w-6"></i>
-                                    </a>
-                                    <a href="#" class="text-gray-400 hover:text-green-500">
-                                        <i data-feather="instagram" class="h-6 w-6"></i>
-                                    </a>
-                                    <a href="#" class="text-gray-400 hover:text-green-500">
-                                        <i data-feather="twitter" class="h-6 w-6"></i>
-                                    </a>
-                                    <a href="#" class="text-gray-400 hover:text-green-500">
-                                        <i data-feather="youtube" class="h-6 w-6"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase">Product</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Features</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Pricing</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Apps</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Integrations</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase">Resources</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Documentation</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Guides</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Blog</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase">Company</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">About</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Careers</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Press</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Partners</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase">Legal</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Privacy</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Terms</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Cookie Policy</a></li>
-                        <li><a href="#" class="text-base text-gray-400 hover:text-white">Licenses</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center">
-                    <i data-feather="droplet" class="text-green-500 h-8 w-8"></i>
-                    <span class="ml-2 text-xl font-bold text-white">GreenPulse</span>
-                </div>
-                <p class="mt-4 md:mt-0 text-base text-gray-400">
-                    &copy; 2023 GreenPulse. All rights reserved.
-                </p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Initialize animations
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-
-        // Initialize Vanta.js globe
-        VANTA.GLOBE({
-            el: "#vanta-globe",
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            color: 0x4ade80,
-            backgroundColor: 0x0,
-            size: 0.8
-        });
-
-        // Initialize feather icons
-        feather.replace();
-    </script>
 </body>
 </html>
